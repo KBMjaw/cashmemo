@@ -6,6 +6,7 @@ interface SeoOptions {
   image?: string
   canonical?: string
   noindex?: boolean
+  type?: 'website' | 'profile'
 }
 
 function setMeta(attr: 'name' | 'property', key: string, content: string) {
@@ -19,7 +20,7 @@ function setMeta(attr: 'name' | 'property', key: string, content: string) {
 }
 
 /** Sets document title + meta description/OG/Twitter/canonical tags for a page. */
-export function useSeo({ title, description, image, canonical, noindex }: SeoOptions) {
+export function useSeo({ title, description, image, canonical, noindex, type = 'website' }: SeoOptions) {
   useEffect(() => {
     const previousTitle = document.title
     document.title = title
@@ -30,11 +31,16 @@ export function useSeo({ title, description, image, canonical, noindex }: SeoOpt
       setMeta('name', 'twitter:description', description)
     }
     setMeta('property', 'og:title', title)
+    setMeta('property', 'og:type', type)
+    setMeta('property', 'og:site_name', 'One-Tap')
     setMeta('name', 'twitter:title', title)
     setMeta('name', 'twitter:card', image ? 'summary_large_image' : 'summary')
     if (image) {
       setMeta('property', 'og:image', image)
       setMeta('name', 'twitter:image', image)
+    }
+    if (canonical) {
+      setMeta('property', 'og:url', canonical)
     }
 
     let robots = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]')
@@ -62,5 +68,5 @@ export function useSeo({ title, description, image, canonical, noindex }: SeoOpt
     return () => {
       document.title = previousTitle
     }
-  }, [title, description, image, canonical, noindex])
+  }, [title, description, image, canonical, noindex, type])
 }

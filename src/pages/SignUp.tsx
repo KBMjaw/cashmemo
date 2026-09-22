@@ -40,6 +40,7 @@ export default function SignUp() {
       email: values.email,
       password: values.password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           full_name: values.fullName,
           username: values.username,

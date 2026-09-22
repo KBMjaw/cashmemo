@@ -49,6 +49,7 @@ export default function PublicProfile() {
     image: profile?.profile_photo_url ?? undefined,
     canonical: username ? profileUrl(username) : undefined,
     noindex: profile ? !profile.search_engine_visible : true,
+    type: 'profile',
   })
 
   if (isLoading) {
