@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 
 const NAV_LINKS = [
+  { to: '/quick-qr', label: 'Quick QR' },
   { to: '/features', label: 'Features' },
   { to: '/templates', label: 'Templates' },
   { to: '/pricing', label: 'Pricing' },

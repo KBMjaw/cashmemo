@@ -5,6 +5,7 @@ import { MarketingLayout } from '@/components/layout/MarketingLayout'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 
 import Landing from '@/pages/Landing'
+import QuickQR from '@/pages/QuickQR'
 import Features from '@/pages/Features'
 import Templates from '@/pages/Templates'
 import Pricing from '@/pages/Pricing'
@@ -24,6 +25,7 @@ import ProfileEditor from '@/pages/dashboard/ProfileEditor'
 import Businesses from '@/pages/dashboard/Businesses'
 import BusinessNew from '@/pages/dashboard/BusinessNew'
 import Portfolio from '@/pages/dashboard/Portfolio'
+import ExperiencePage from '@/pages/dashboard/Experience'
 import Social from '@/pages/dashboard/Social'
 import Cards from '@/pages/dashboard/Cards'
 import CardNew from '@/pages/dashboard/CardNew'
@@ -32,6 +34,7 @@ import Analytics from '@/pages/dashboard/Analytics'
 import Settings from '@/pages/dashboard/Settings'
 
 import PublicProfile from '@/pages/PublicProfile'
+import ProfileOrShortLink from '@/pages/ProfileOrShortLink'
 import NotFound from '@/pages/NotFound'
 
 export default function App() {
@@ -42,6 +45,7 @@ export default function App() {
       <Routes>
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<Landing />} />
+          <Route path="/quick-qr" element={<QuickQR />} />
           <Route path="/features" element={<Features />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/pricing" element={<Pricing />} />
@@ -64,6 +68,7 @@ export default function App() {
             <Route path="businesses" element={<Businesses />} />
             <Route path="businesses/new" element={<BusinessNew />} />
             <Route path="portfolio" element={<Portfolio />} />
+            <Route path="experience" element={<ExperiencePage />} />
             <Route path="social" element={<Social />} />
             <Route path="cards" element={<Cards />} />
             <Route path="cards/new" element={<CardNew />} />
@@ -74,6 +79,7 @@ export default function App() {
         </Route>
 
         <Route path="/u/:username" element={<PublicProfile />} />
+        <Route path="/:slug" element={<ProfileOrShortLink />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

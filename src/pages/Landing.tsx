@@ -47,22 +47,43 @@ export default function Landing() {
             Create your digital identity, business profile and professional business card — all connected through
             one simple QR code.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/signup">
-              <Button size="lg">Create Your One-Tap</Button>
+        </div>
+      </section>
+
+      {/* Two modes */}
+      <section className="container-app -mt-16 pb-16 sm:-mt-20">
+        <div className="relative z-10 grid gap-6 sm:grid-cols-2">
+          <Card className="flex flex-col gap-4 border-navy-100 shadow-xl">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Quick QR</p>
+              <h2 className="mt-1 text-xl font-bold text-navy-900">Create a QR from any existing link</h2>
+              <p className="mt-2 text-sm text-navy-500">Paste a URL → Get a short link → Generate QR.</p>
+            </div>
+            <Link to="/quick-qr" className="mt-auto">
+              <Button fullWidth>Create Quick QR</Button>
             </Link>
-            <Link to="/templates">
-              <Button size="lg" variant="outline" className="border-navy-600 text-white hover:bg-white/10">
-                Explore Demo
+            <p className="text-center text-xs text-navy-400">No login required.</p>
+          </Card>
+
+          <Card className="flex flex-col gap-4 border-brand-200 shadow-xl">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Digital Identity</p>
+              <h2 className="mt-1 text-xl font-bold text-navy-900">Create your digital identity</h2>
+              <p className="mt-2 text-sm text-navy-500">Profile → Business → QR → Digital Business Card.</p>
+            </div>
+            <Link to="/signup" className="mt-auto">
+              <Button fullWidth variant="secondary">
+                Create My One-Tap
               </Button>
             </Link>
-          </div>
+            <p className="text-center text-xs text-navy-400">Login/signup required.</p>
+          </Card>
         </div>
       </section>
 
       {/* How it works */}
       <section className="container-app py-20">
-        <h2 className="text-center text-3xl font-bold text-navy-900">How It Works</h2>
+        <h2 className="text-center text-3xl font-bold text-navy-900">How Digital Identity Works</h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step) => (
             <div key={step.n} className="flex flex-col gap-2">

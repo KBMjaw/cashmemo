@@ -4,6 +4,7 @@ const RESERVED_USERNAMES = new Set([
   'admin', 'login', 'signup', 'dashboard', 'settings', 'api', 'support',
   'about', 'contact', 'pricing', 'terms', 'privacy', 'features', 'templates',
   'u', 'www', 'root', 'onetap', 'one-tap', 'help', 'billing', 'legal', 'cookies',
+  'quick-qr', 'forgot-password', 'reset-password', 'x',
 ])
 
 export const usernameSchema = z

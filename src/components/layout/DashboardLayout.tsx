@@ -11,17 +11,17 @@ const NAV_SECTIONS = [
     items: [{ to: '/dashboard', label: 'Dashboard', icon: 'home', end: true }],
   },
   {
+    heading: 'Quick QR',
+    items: [{ to: '/quick-qr', label: 'Create Quick QR', icon: 'zap' }],
+  },
+  {
     heading: 'Digital Identity',
     items: [
       { to: '/dashboard/profile', label: 'My Profile', icon: 'user' },
       { to: '/dashboard/businesses', label: 'Businesses', icon: 'briefcase' },
       { to: '/dashboard/portfolio', label: 'Portfolio', icon: 'folder' },
+      { to: '/dashboard/experience', label: 'Experience', icon: 'clock' },
       { to: '/dashboard/social', label: 'Social Links', icon: 'link' },
-    ],
-  },
-  {
-    heading: 'Identity Tools',
-    items: [
       { to: '/dashboard/cards', label: 'Business Cards', icon: 'card' },
       { to: '/dashboard/qr', label: 'QR Codes', icon: 'qr' },
       { to: '/dashboard/analytics', label: 'Analytics', icon: 'chart' },
@@ -42,6 +42,8 @@ function NavIcon({ name }: { name: string }) {
     card: <path d="M3 6h18v12H3zM3 10h18" />,
     qr: <path d="M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 3h7m-7 4h3m1-7h3v3" />,
     chart: <path d="M4 19V9m6 10V5m6 14v-7m4 7H3" />,
+    zap: <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" strokeLinejoin="round" />,
+    clock: <path d="M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />,
     settings: <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7-3a7 7 0 0 0-.2-1.6l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2.8-1.6L13 2h-4l-.6 2.8a7 7 0 0 0-2.8 1.6l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 3 12c0 .5 0 1.1.2 1.6l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2.8 1.6L11 22h4l.6-2.8a7 7 0 0 0 2.8-1.6l2.4 1 2-3.4-2-1.6c.1-.5.2-1.1.2-1.6Z" />,
   }
   return (

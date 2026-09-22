@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/Alert'
 import { QRGenerator } from '@/components/profile/QRGenerator'
 import { useMyProfile } from '@/hooks/useProfile'
 import { profileUrl } from '@/lib/supabase'
+import { downloadCanvasAsPdf, downloadCanvasAsPng, downloadSvgString } from '@/lib/qrDownload'
 
 export default function QrCodePage() {
   const { data: profile } = useMyProfile()
@@ -24,10 +25,7 @@ export default function QrCodePage() {
 
   function downloadPng() {
     if (!canvas) return
-    const link = document.createElement('a')
-    link.download = `${profile!.username}-qr.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
+    downloadCanvasAsPng(canvas, `${profile!.username}-qr.png`)
   }
 
   async function downloadSvg() {
@@ -38,12 +36,16 @@ export default function QrCodePage() {
         margin: 1,
         color: { dark: color, light: '#ffffff' },
       })
-      const blob = new Blob([svg], { type: 'image/svg+xml' })
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = `${profile!.username}-qr.svg`
-      link.click()
-      URL.revokeObjectURL(link.href)
+      downloadSvgString(svg, `${profile!.username}-qr.svg`)
+    } catch {
+      setError('QR code generation failed. Please try again.')
+    }
+  }
+
+  async function downloadPdf() {
+    if (!canvas) return
+    try {
+      await downloadCanvasAsPdf(canvas, `${profile!.username}-qr.pdf`, url)
     } catch {
       setError('QR code generation failed. Please try again.')
     }
@@ -77,10 +79,15 @@ export default function QrCodePage() {
           />
           <Checkbox label='Show "Scan Me" text' checked={scanMe} onChange={(e) => setScanMe(e.target.checked)} />
 
-          <div className="mt-2 flex flex-col gap-2">
-            <Button onClick={downloadPng}>Download PNG</Button>
-            <Button variant="outline" onClick={downloadSvg}>
-              Download SVG
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <Button size="sm" onClick={downloadPng}>
+              PNG
+            </Button>
+            <Button size="sm" variant="outline" onClick={downloadSvg}>
+              SVG
+            </Button>
+            <Button size="sm" variant="outline" onClick={downloadPdf}>
+              PDF
             </Button>
           </div>
           <p className="text-xs text-navy-400">

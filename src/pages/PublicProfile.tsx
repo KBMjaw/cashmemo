@@ -21,8 +21,14 @@ import { Link } from 'react-router-dom'
 import { Logo } from '@/components/layout/Logo'
 import type { Business, Profile } from '@/types/database'
 
-export default function PublicProfile() {
-  const { username } = useParams<{ username: string }>()
+interface PublicProfileProps {
+  /** Renders for this username directly instead of reading the `/u/:username` route param — used by the clean `/{username}` route. */
+  usernameOverride?: string
+}
+
+export default function PublicProfile({ usernameOverride }: PublicProfileProps) {
+  const params = useParams<{ username: string }>()
+  const username = usernameOverride ?? params.username
   const { data: profile, isLoading, isError } = usePublicProfile(username)
   const userId = profile?.id as string | undefined
 

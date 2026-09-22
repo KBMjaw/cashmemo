@@ -32,6 +32,12 @@ export const STORAGE_BUCKETS = {
 
 export const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin
 
+/** Canonical public profile URL — the clean `/{username}` form. */
 export function profileUrl(username: string) {
+  return `${APP_URL}/${username}`
+}
+
+/** Legacy `/u/{username}` form, kept working for links/cards printed before the clean URL shipped. */
+export function legacyProfileUrl(username: string) {
   return `${APP_URL}/u/${username}`
 }
