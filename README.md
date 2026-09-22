@@ -7,6 +7,16 @@ profile, list every business you run, generate a permanent QR code, and design a
 print-ready business card — all connected to one link that stays current when your
 details change.
 
+## Deployment
+
+Live on Vercel (project `one-tap`, auto-deploys from this branch until the PR merges
+to `main`): **https://one-tap-black.vercel.app**
+
+The app builds and serves correctly, but every Supabase-backed feature (auth,
+profiles, storage) needs a Supabase project connected before it will work — see
+"Getting started" below, then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+as environment variables on the Vercel project and redeploy.
+
 ## Status
 
 This repository currently implements **Phase 1 (Foundation)**, **Phase 2 (Digital
