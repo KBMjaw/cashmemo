@@ -58,7 +58,7 @@ export default function Cards() {
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
-          <Card key={c.id} className="flex flex-col gap-3">
+          <Card key={c.id} interactive className="flex flex-col gap-3">
             {c.preview_url ? (
               <img src={c.preview_url} alt={c.name} className="aspect-[7/4] w-full rounded-lg object-cover" />
             ) : (

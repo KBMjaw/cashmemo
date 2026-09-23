@@ -44,7 +44,7 @@ export default function Portfolio() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         {items.map((item) => (
-          <Card key={item.id} className="flex flex-col gap-3">
+          <Card key={item.id} interactive className="flex flex-col gap-3">
             {item.cover_image_url && (
               <img src={item.cover_image_url} alt="" className="h-32 w-full rounded-lg object-cover" />
             )}

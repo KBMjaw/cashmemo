@@ -197,7 +197,7 @@ export default function ProfileEditor() {
           <Input label="Professional Name" hint="Shown instead of your full name if set" {...register('professional_name')} />
           <Input label="Professional Title" placeholder="Founder & CEO" {...register('professional_title')} />
           <Textarea label="Short Bio" placeholder="Tell visitors who you are" {...register('bio')} />
-          <Input label="Location" placeholder="Chennai, India" {...register('location')} />
+          <Input label="Location" placeholder="Erode, India" {...register('location')} />
           <Input label="Phone" type="tel" {...register('phone')} />
           <Input label="WhatsApp" type="tel" {...register('whatsapp')} />
           <Input label="Website" type="url" placeholder="https://" {...register('website')} />

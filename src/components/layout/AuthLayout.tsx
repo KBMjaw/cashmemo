@@ -17,8 +17,13 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           {subtitle && <p className="mt-2 text-sm text-navy-500">{subtitle}</p>}
           <div className="mt-8">{children}</div>
           <p className="mt-10 text-xs text-navy-400 lg:hidden">
-            Developed by{' '}
-            <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-500 hover:underline">
+            A product by{' '}
+            <a
+              href="https://www.cubecorpsol.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-navy-500 transition-colors hover:text-brand-600 hover:underline"
+            >
               Cube Corpsol
             </a>
           </p>
@@ -49,8 +54,13 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
         <div className="relative z-10 flex items-center justify-between text-sm text-navy-300">
           <span>© {new Date().getFullYear()} One-Tap</span>
           <span>
-            Developed by{' '}
-            <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-200 hover:text-white hover:underline">
+            A product by{' '}
+            <a
+              href="https://www.cubecorpsol.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-navy-200 transition-colors hover:text-white hover:underline"
+            >
               Cube Corpsol
             </a>
           </span>

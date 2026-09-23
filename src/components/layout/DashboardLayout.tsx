@@ -85,12 +85,14 @@ export function DashboardLayout() {
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                       isActive ? 'bg-brand-50 text-brand-700' : 'text-navy-600 hover:bg-navy-50 hover:text-navy-900',
                     )
                   }
                 >
-                  <NavIcon name={item.icon} />
+                  <span className="transition-transform duration-150 group-hover:translate-x-0.5">
+                    <NavIcon name={item.icon} />
+                  </span>
                   {item.label}
                 </NavLink>
               ))}
@@ -108,7 +110,7 @@ export function DashboardLayout() {
         </div>
         <button
           onClick={handleLogout}
-          className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-navy-500 hover:bg-navy-50 hover:text-red-600"
+          className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-navy-500 transition-colors hover:bg-navy-50 hover:text-red-600"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

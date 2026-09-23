@@ -21,7 +21,7 @@ export default function Templates() {
       </p>
       <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {CARD_TEMPLATES.map((t) => (
-          <Card key={t.id} className="flex flex-col gap-3">
+          <Card key={t.id} interactive className="flex flex-col gap-3">
             <button
               type="button"
               onClick={() => selectTemplate(t.id)}

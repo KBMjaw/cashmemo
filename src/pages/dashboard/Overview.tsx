@@ -83,9 +83,9 @@ export default function Overview() {
 
 function QuickLink({ to, title, description }: { to: string; title: string; description: string }) {
   return (
-    <Link to={to}>
-      <Card className="h-full transition-shadow hover:shadow-lg">
-        <p className="font-semibold text-navy-800">{title}</p>
+    <Link to={to} className="group">
+      <Card interactive className="h-full">
+        <p className="font-semibold text-navy-800 transition-colors group-hover:text-brand-600">{title}</p>
         <p className="mt-1 text-sm text-navy-400">{description}</p>
       </Card>
     </Link>

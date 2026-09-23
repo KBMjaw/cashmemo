@@ -64,7 +64,7 @@ export default function Businesses() {
 
       <div className="flex flex-col gap-3">
         {businesses.map((business, index) => (
-          <Card key={business.id} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Card key={business.id} interactive className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <Avatar src={business.logo_url} name={business.name} size="md" />
               <div className="min-w-0">

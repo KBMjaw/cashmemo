@@ -1,8 +1,25 @@
 import { cn } from '@/utils/cn'
 
-export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
+export function Card({
+  className,
+  children,
+  interactive,
+}: {
+  className?: string
+  children: React.ReactNode
+  /** Adds hover elevation/border feedback for cards that act as clickable surfaces. */
+  interactive?: boolean
+}) {
   return (
-    <div className={cn('rounded-xl2 border border-navy-100 bg-white p-5 shadow-card', className)}>{children}</div>
+    <div
+      className={cn(
+        'rounded-xl2 border border-navy-100 bg-white p-5 shadow-card transition-all duration-200 ease-out',
+        interactive && 'hover:-translate-y-0.5 hover:border-navy-200 hover:shadow-cardHover',
+        className,
+      )}
+    >
+      {children}
+    </div>
   )
 }
 

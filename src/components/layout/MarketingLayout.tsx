@@ -28,7 +28,7 @@ export function MarketingLayout() {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  cn('text-sm font-medium text-navy-500 hover:text-navy-900', isActive && 'text-navy-900')
+                  cn('text-sm font-medium text-navy-500 transition-colors hover:text-navy-900', isActive && 'text-navy-900')
                 }
               >
                 {link.label}
@@ -122,12 +122,12 @@ export function MarketingLayout() {
         <div className="container-app mt-10 flex flex-col gap-2 border-t border-navy-800 pt-6 text-xs text-navy-500 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} One-Tap. All rights reserved.</span>
           <span>
-            Developed by{' '}
+            A product by{' '}
             <a
               href="https://www.cubecorpsol.com/"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-navy-300 hover:text-white hover:underline"
+              className="font-medium text-navy-300 transition-colors hover:text-white hover:underline"
             >
               Cube Corpsol
             </a>

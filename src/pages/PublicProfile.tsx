@@ -95,9 +95,11 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
   return (
     <div className="min-h-screen bg-navy-50/40 pb-16">
       <div className="relative h-48 w-full bg-gradient-to-br from-navy-800 to-navy-950 sm:h-64">
-        {profile.cover_photo_url && (
-          <img src={profile.cover_photo_url} alt="" className="h-full w-full object-cover" />
-        )}
+        <img
+          src={profile.cover_photo_url || '/cover-default.jpg'}
+          alt=""
+          className="h-full w-full object-cover"
+        />
       </div>
 
       <div className="container-app -mt-16 max-w-2xl">
@@ -193,7 +195,7 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-navy-400">Portfolio</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {portfolio.map((p) => (
-                <Card key={p.id}>
+                <Card key={p.id} interactive>
                   {p.cover_image_url && <img src={p.cover_image_url} alt="" className="mb-3 h-32 w-full rounded-lg object-cover" />}
                   <p className="font-semibold text-navy-800">{p.title}</p>
                   {p.category && <p className="text-xs font-medium uppercase text-brand-500">{p.category}</p>}
@@ -214,7 +216,7 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-navy-400">Experience</h2>
             <div className="flex flex-col gap-3">
               {experience.map((e) => (
-                <Card key={e.id}>
+                <Card key={e.id} interactive>
                   <p className="font-semibold text-navy-800">{e.position}</p>
                   <p className="text-sm text-navy-500">{e.company}</p>
                   <p className="text-xs text-navy-400">
@@ -238,8 +240,13 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
       </div>
 
       <footer className="mt-10 py-6 text-center text-xs text-navy-400">
-        Developed by{' '}
-        <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-500 hover:text-brand-600 hover:underline">
+        A product by{' '}
+        <a
+          href="https://www.cubecorpsol.com/"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-navy-500 transition-colors hover:text-brand-600 hover:underline"
+        >
           Cube Corpsol
         </a>
       </footer>
@@ -251,7 +258,7 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
 
 function BusinessCard({ business, highlighted }: { business: Business; highlighted?: boolean }) {
   return (
-    <Card className={highlighted ? 'border-brand-200 bg-brand-50/30' : undefined}>
+    <Card interactive className={highlighted ? 'border-brand-200 bg-brand-50/30' : undefined}>
       <div className="flex items-start gap-4">
         <Avatar src={business.logo_url} name={business.name} size="md" />
         <div className="min-w-0 flex-1">

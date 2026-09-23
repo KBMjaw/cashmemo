@@ -101,7 +101,7 @@ export default function Landing() {
           <h2 className="text-center text-3xl font-bold text-navy-900">Everything you need in one identity</h2>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f) => (
-              <Card key={f.title}>
+              <Card key={f.title} interactive>
                 <p className="font-semibold text-navy-800">{f.title}</p>
                 <p className="mt-1 text-sm text-navy-500">{f.desc}</p>
               </Card>
@@ -129,10 +129,14 @@ export default function Landing() {
               <div className="h-20 w-20 rounded-full border-4 border-white bg-brand-500" />
               <p className="font-bold text-navy-900">Navaneethan Gunasekaran</p>
               <p className="text-sm text-brand-600">Founder & CEO, Cube CorpSol</p>
-              <p className="text-xs text-navy-400">Chennai, India</p>
+              <p className="text-xs text-navy-400">Erode, India</p>
               <div className="mt-2 grid w-full grid-cols-2 gap-2">
-                <div className="rounded-lg border border-navy-100 py-2 text-xs font-medium text-navy-600">Call</div>
-                <div className="rounded-lg border border-navy-100 py-2 text-xs font-medium text-navy-600">WhatsApp</div>
+                <div className="rounded-lg border border-navy-100 py-2 text-xs font-medium text-navy-600 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">
+                  Call
+                </div>
+                <div className="rounded-lg border border-navy-100 py-2 text-xs font-medium text-navy-600 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700">
+                  WhatsApp
+                </div>
               </div>
             </div>
           </Card>

@@ -39,7 +39,7 @@ export default function ExperiencePage() {
 
       <div className="flex flex-col gap-3">
         {items.map((item) => (
-          <Card key={item.id} className="flex items-start justify-between gap-4">
+          <Card key={item.id} interactive className="flex items-start justify-between gap-4">
             <div>
               <p className="font-semibold text-navy-800">{item.position}</p>
               <p className="text-sm text-navy-500">{item.company}</p>

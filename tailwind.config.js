@@ -35,6 +35,7 @@ export default {
       },
       boxShadow: {
         card: '0 1px 2px rgba(10, 18, 48, 0.06), 0 2px 8px rgba(10, 18, 48, 0.06)',
+        cardHover: '0 4px 10px rgba(10, 18, 48, 0.08), 0 8px 24px rgba(10, 18, 48, 0.1)',
       },
       borderRadius: {
         xl2: '1.25rem',

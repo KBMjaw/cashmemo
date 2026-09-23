@@ -103,7 +103,7 @@ export default function Social() {
 
       <div className="flex flex-col gap-3">
         {links.map((link, index) => (
-          <Card key={link.id} className="flex items-center justify-between gap-4">
+          <Card key={link.id} interactive className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="font-medium text-navy-800">{PLATFORM_LABELS[link.platform]}</p>
               <p className="truncate text-sm text-navy-400">{link.url}</p>
