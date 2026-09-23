@@ -1,0 +1,12 @@
+-- Caught by live regression testing: RLS combines multiple permissive
+-- policies with OR, but Postgres still needs EXECUTE on every function
+-- referenced in ANY policy on a table to even evaluate that policy set for
+-- a given role -- including ones that end up false. The `_select_admin`
+-- policies added in 0004 call public.is_admin(), so revoking anon's EXECUTE
+-- on it (done for hardening in 0005) broke anon's *existing* access to
+-- every table that also has a public/anon policy: short_links (Quick QR
+-- redirects), profiles/businesses/social_links/portfolio/experience
+-- (public profiles). is_admin() only returns a boolean and is safe for
+-- anyone to call -- it evaluates to false for anon since auth.uid() is
+-- null -- so grant it back.
+grant execute on function public.is_admin() to anon;
