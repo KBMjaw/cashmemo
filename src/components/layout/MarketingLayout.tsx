@@ -119,8 +119,19 @@ export function MarketingLayout() {
             ]}
           />
         </div>
-        <div className="container-app mt-10 border-t border-navy-800 pt-6 text-xs text-navy-500">
-          © {new Date().getFullYear()} One-Tap. All rights reserved.
+        <div className="container-app mt-10 flex flex-col gap-2 border-t border-navy-800 pt-6 text-xs text-navy-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} One-Tap. All rights reserved.</span>
+          <span>
+            Developed by{' '}
+            <a
+              href="https://www.cubecorpsol.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-navy-300 hover:text-white hover:underline"
+            >
+              Cube Corpsol
+            </a>
+          </span>
         </div>
       </footer>
     </div>

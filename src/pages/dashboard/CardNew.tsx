@@ -20,12 +20,16 @@ export default function CardNew() {
   const { user } = useAuth()
   const [params] = useSearchParams()
   const editId = params.get('id')
+  const requestedTemplate = params.get('template')
+  const initialTemplateId = CARD_TEMPLATES.some((t) => t.id === requestedTemplate)
+    ? (requestedTemplate as string)
+    : CARD_TEMPLATES[0].id
 
   const { data: profile } = useMyProfile()
   const { data: businesses = [] } = useBusinesses()
   const primaryBusiness = businesses.find((b) => b.is_primary) ?? businesses[0]
 
-  const [templateId, setTemplateId] = useState(CARD_TEMPLATES[0].id)
+  const [templateId, setTemplateId] = useState(initialTemplateId)
   const [fields, setFields] = useState<CardFields>({
     name: '',
     designation: '',

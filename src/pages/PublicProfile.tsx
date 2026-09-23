@@ -237,6 +237,13 @@ export default function PublicProfile({ usernameOverride }: PublicProfileProps) 
         </div>
       </div>
 
+      <footer className="mt-10 py-6 text-center text-xs text-navy-400">
+        Developed by{' '}
+        <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-500 hover:text-brand-600 hover:underline">
+          Cube Corpsol
+        </a>
+      </footer>
+
       {userId && <ReportProfileModal userId={userId} open={reportOpen} onClose={() => setReportOpen(false)} />}
     </div>
   )

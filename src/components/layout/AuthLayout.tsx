@@ -16,6 +16,12 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
           <h1 className="text-2xl font-bold text-navy-900">{title}</h1>
           {subtitle && <p className="mt-2 text-sm text-navy-500">{subtitle}</p>}
           <div className="mt-8">{children}</div>
+          <p className="mt-10 text-xs text-navy-400 lg:hidden">
+            Developed by{' '}
+            <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-500 hover:underline">
+              Cube Corpsol
+            </a>
+          </p>
         </div>
       </div>
       <div className="relative hidden overflow-hidden bg-navy-950 lg:flex lg:flex-col lg:justify-between lg:p-12">
@@ -40,7 +46,15 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             one simple QR code.
           </p>
         </div>
-        <div className="relative z-10 text-sm text-navy-300">© {new Date().getFullYear()} One-Tap</div>
+        <div className="relative z-10 flex items-center justify-between text-sm text-navy-300">
+          <span>© {new Date().getFullYear()} One-Tap</span>
+          <span>
+            Developed by{' '}
+            <a href="https://www.cubecorpsol.com/" target="_blank" rel="noreferrer" className="font-medium text-navy-200 hover:text-white hover:underline">
+              Cube Corpsol
+            </a>
+          </span>
+        </div>
       </div>
     </div>
   )
