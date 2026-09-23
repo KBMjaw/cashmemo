@@ -4,963 +4,307 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MineSafe-Vision</title>
-<meta name="description" content="MineSafe-Vision – AI-enabled safety and monitoring system for mine vehicles in fog and low-visibility conditions. 8-slide project presentation.">
+<meta name="description" content="MineSafe-Vision: AI-enabled safety and monitoring prototype for mine vehicles in fog and low visibility. Live webcam, in-browser object detection, safe-distance risk engine and control-room view.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d131b'/%3E%3Cpath d='M6 22l6-12 5 8 3-4 6 8z' fill='none' stroke='%2338c3dd' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0d131b; --bg2:#111a24; --panel:#152130; --panel2:#1a2838; --line:#26384b; --line2:#31465c;
-  --text:#e7edf3; --muted:#91a2b6; --dim:#62748a;
-  --cyan:#38c3dd; --cyan-d:#1f7f94; --amber:#f0a53a; --red:#e5484d; --green:#3fb950;
-  --yellow:#c49a24;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#070b10;color:var(--text);font-family:"IBM Plex Sans",system-ui,sans-serif;overflow:hidden}
-b,strong{font-weight:600}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
-#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center center;transform:translate(-50%,-50%)}
-.slide{position:absolute;inset:0;display:none;background:var(--bg);overflow:hidden}
-.slide.active{display:block}
-.slide::before{content:"";position:absolute;inset:0;background:radial-gradient(1200px 600px at 85% -10%,rgba(56,195,221,.07),transparent 60%);pointer-events:none}
-.hdr{position:absolute;left:64px;top:44px;right:64px}
-.kicker{font:500 15px/1 "IBM Plex Mono",monospace;color:var(--cyan);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:12px}
-.kicker::before{content:"";width:28px;height:2px;background:var(--cyan)}
-h2{font-size:44px;font-weight:600;letter-spacing:-.01em;margin-top:14px;line-height:1.1}
-h2 .sub{font-size:22px;font-weight:400;color:var(--muted);margin-left:14px;letter-spacing:0}
-.ftr{position:absolute;left:64px;right:64px;bottom:26px;display:flex;justify-content:space-between;font:400 13px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.05em}
-.ftr b{color:var(--muted);font-weight:500}
-.chip{display:inline-flex;align-items:center;gap:8px;font:600 13px/1 "IBM Plex Mono",monospace;letter-spacing:.06em;padding:7px 11px;border-radius:4px;text-transform:uppercase}
-.chip.safe{background:rgba(63,185,80,.14);color:var(--green);border:1px solid rgba(63,185,80,.45)}
-.chip.caution{background:rgba(240,165,58,.14);color:var(--amber);border:1px solid rgba(240,165,58,.5)}
-.chip.critical{background:rgba(229,72,77,.16);color:#ff6b6f;border:1px solid rgba(229,72,77,.55)}
-.chip.info{background:rgba(56,195,221,.1);color:var(--cyan);border:1px solid rgba(56,195,221,.4)}
-.chip.fault{background:rgba(145,162,182,.1);color:var(--text);border:1px dashed var(--muted)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px}
-.ico{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.muted{color:var(--muted)}
-.lbl{font:500 12px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-
-/* ---------- slide 1 ---------- */
-#s1 .left{position:absolute;left:80px;top:150px;width:640px}
-#s1 .tag{font:500 15px "IBM Plex Mono",monospace;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase}
-#s1 h1{white-space:nowrap;font-size:86px;font-weight:600;letter-spacing:-.025em;line-height:1;margin-top:26px}
-#s1 h1 span{color:var(--cyan)}
-#s1 .subt{font-size:27px;line-height:1.35;color:#c8d3de;margin-top:26px;font-weight:400}
-#s1 .rule{width:84px;height:3px;background:var(--amber);margin:38px 0 26px}
-#s1 .idea{font-size:21px;line-height:1.5;color:var(--muted);max-width:560px}
-#s1 .idea b{color:var(--text);font-weight:600}
-#s1 .pills{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
-#s1 .pill{border:1px solid var(--line2);border-radius:4px;padding:9px 14px;font:500 14px "IBM Plex Mono",monospace;color:#c8d3de;background:rgba(21,33,48,.7)}
-#s1 .team{position:absolute;left:80px;bottom:70px;font:400 15px "IBM Plex Mono",monospace;color:var(--dim);line-height:1.7}
-#s1 .team b{color:var(--muted);font-weight:500}
-#s1 .art{position:absolute;right:0;top:0;width:930px;height:900px}
-
-/* ---------- slide 2 ---------- */
-#s2 .scene{position:absolute;left:64px;top:160px;width:860px;height:600px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
-#s2 .list{position:absolute;left:960px;top:160px;width:576px}
-.hz{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
-.hz:first-child{padding-top:2px}
-.hz .ico{width:30px;height:30px;color:var(--amber);margin-top:2px}
-.hz h4{font-size:20px;font-weight:600}
-.hz p{font-size:15.5px;color:var(--muted);margin-top:3px;line-height:1.4}
-#s2 .why{position:absolute;left:960px;top:636px;width:576px;padding:18px 20px;border-left:3px solid var(--red);background:rgba(229,72,77,.07);border-radius:0 8px 8px 0}
-#s2 .why h4{font:600 13px "IBM Plex Mono",monospace;color:#ff6b6f;letter-spacing:.08em;text-transform:uppercase}
-#s2 .why p{font-size:18px;line-height:1.45;margin-top:8px}
-
-/* ---------- slide 3 ---------- */
-#s3 .flow{position:absolute;left:64px;right:64px;top:196px;display:flex;align-items:stretch;gap:0}
-.blk{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px 18px 20px;position:relative;min-height:268px}
-.blk .n{font:600 13px "IBM Plex Mono",monospace;color:var(--dim)}
-.blk .ico{width:44px;height:44px;color:var(--cyan);margin:14px 0 14px;stroke-width:1.5}
-.blk h3{font-size:22px;font-weight:600;line-height:1.15}
-.blk p{font-size:16px;color:var(--muted);line-height:1.45;margin-top:10px}
-.blk.hl{border-color:var(--cyan-d);background:linear-gradient(180deg,rgba(56,195,221,.1),var(--panel) 60%)}
-.blk.warn{border-color:rgba(240,165,58,.55);background:linear-gradient(180deg,rgba(240,165,58,.1),var(--panel) 60%)}
-.blk.warn .ico{color:var(--amber)}
-.arr{width:34px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--cyan)}
-#s3 .cr{position:absolute;right:64px;top:540px;width:245px}
-#s3 .cr .blk{min-height:0;padding:16px 18px;border-style:dashed}
-#s3 .cr .blk .ico{width:34px;height:34px;margin:8px 0}
-#s3 .wire{position:absolute;right:185px;top:466px;height:74px;border-left:2px dashed var(--line2)}
-#s3 .wire span{position:absolute;right:10px;top:24px;white-space:nowrap;font:500 12px "IBM Plex Mono",monospace;color:var(--dim)}
-#s3 .ex{position:absolute;left:64px;top:560px;width:1150px}
-#s3 .ex .lbl{margin-bottom:12px}
-#s3 .exrow{display:flex;align-items:center;gap:10px}
-#s3 .ev{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:150px}
-#s3 .ev small{display:block;font:500 12px "IBM Plex Mono",monospace;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-#s3 .ev b{display:block;font-size:19px;font-weight:600;margin-top:5px}
-#s3 .plus{color:var(--dim);font:500 20px "IBM Plex Mono"}
-#s3 .res{background:rgba(229,72,77,.1);border:1px solid rgba(229,72,77,.55);border-radius:6px;padding:12px 16px}
-#s3 .res small{display:block;font:600 12px "IBM Plex Mono",monospace;color:#ff6b6f;letter-spacing:.06em}
-#s3 .res b{display:block;font-size:19px;margin-top:5px}
-#s3 .note{position:absolute;left:64px;top:720px;width:1150px;display:flex;gap:28px}
-#s3 .note div{flex:1;font-size:17px;line-height:1.5;color:var(--muted);padding-left:16px;border-left:2px solid var(--line2)}
-#s3 .note b{color:var(--text)}
-
-/* ---------- slide 4 ---------- */
-#s4 .steps{position:absolute;left:64px;right:64px;top:170px;display:flex;gap:0}
-.st{flex:1;padding:18px 18px 18px;border-top:3px solid var(--cyan-d);background:var(--panel);position:relative}
-.st:not(:last-child){margin-right:12px}
-.st .n{font:600 13px "IBM Plex Mono",monospace;color:var(--cyan)}
-.st h3{font-size:22px;font-weight:600;margin-top:6px}
-.st ul{list-style:none;margin-top:10px}
-.st li{font-size:14.5px;color:var(--muted);line-height:1.4;padding-left:13px;position:relative;margin-top:5px}
-.st li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:var(--line2)}
-.st.last{border-top-color:var(--amber)}
-.st.last .n{color:var(--amber)}
-#s4 .loop{position:absolute;left:64px;top:404px;font:500 13px "IBM Plex Mono",monospace;color:var(--dim);letter-spacing:.04em}
-#s4 .loop b{color:var(--cyan);font-weight:500}
-#s4 .bot{position:absolute;left:64px;right:64px;top:440px;display:flex;gap:20px}
-#s4 .bot > .card{padding:20px 22px}
-#s4 h4{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
-#s4 .dist{width:430px}
-#s4 .dist p{font-size:15.5px;color:var(--muted);line-height:1.5;margin-top:10px}
-#s4 .dist p b{color:var(--text);font-weight:600}
-#s4 .form{width:520px}
-#s4 .eq{font:500 16px/1.6 "IBM Plex Mono",monospace;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-top:12px;color:var(--text)}
-#s4 .eq span{color:var(--cyan)}
-#s4 .rules{margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:15px;color:var(--muted)}
-#s4 .calc{flex:1}
-.calc .row{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:15px}
-.calc .row label{width:92px;color:var(--muted)}
-.calc input[type=range]{flex:1;accent-color:var(--cyan)}
-.calc .v{width:74px;text-align:right;font:600 15px "IBM Plex Mono",monospace}
-.seg{display:flex;flex:1;border:1px solid var(--line2);border-radius:5px;overflow:hidden}
-.seg button{flex:1;background:transparent;border:0;color:var(--muted);font:500 13px "IBM Plex Sans",system-ui,sans-serif;padding:6px 4px;cursor:pointer}
-.seg button+button{border-left:1px solid var(--line2)}
-.seg button.on{background:rgba(56,195,221,.15);color:var(--cyan)}
-.calc .out{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-.calc .out .g{font-size:15px;color:var(--muted)}
-.calc .out .g b{font:600 20px "IBM Plex Mono";color:var(--text)}
-.calc .ex2{font-size:13.5px;color:var(--dim);margin-top:10px;line-height:1.45}
-
-/* ---------- slide 5 ---------- */
-#s5 .cab{position:absolute;left:64px;top:150px;width:960px;height:640px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
-#s5 .side{position:absolute;left:1052px;top:150px;width:484px}
-table.mx{width:100%;border-collapse:collapse;font-size:15px}
-table.mx th{font:500 11.5px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);text-align:center;padding:0 4px 10px}
-table.mx th:first-child{text-align:left}
-table.mx td{padding:9px 4px;border-top:1px solid var(--line);text-align:center}
-table.mx td:first-child{text-align:left;font-weight:600}
-.d{display:inline-block;width:12px;height:12px;border-radius:50%}
-.d.g{background:var(--green)}.d.a{background:var(--amber)}.d.r{background:var(--red)}
-.leg{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-top:10px}
-.leg span{display:flex;align-items:center;gap:6px}
-.leg .d{width:9px;height:9px}
-#s5 .how{margin-top:22px;padding:16px 18px;border-left:3px solid var(--cyan-d);background:var(--panel)}
-#s5 .how+.how{margin-top:12px}
-#s5 .how h4{font-size:18px;font-weight:600}
-#s5 .how p{font-size:15.5px;color:var(--muted);line-height:1.5;margin-top:6px}
-#s5 .how p b{color:var(--text);font-weight:600}
-
-/* ---------- slide 6 ---------- */
-#s6 .diag{position:absolute;left:40px;top:140px;width:860px;height:560px}
-#s6 .groups{position:absolute;left:920px;top:150px;width:616px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.grp{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
-.grp.wide{grid-column:span 2}
-.grp h4{font:600 12.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
-.hw{display:flex;gap:10px;align-items:flex-start;padding:5px 0}
-.hw .ico{width:22px;height:22px;color:#b9c7d6;margin-top:1px}
-.hw .t{font-size:15.5px;font-weight:600;line-height:1.25}
-.hw .t i{font-style:normal;font:500 12px "IBM Plex Mono",monospace;color:var(--cyan);margin-right:6px}
-.hw .t small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;line-height:1.35}
-.grp.wide .cols{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}
-#s6 .links{position:absolute;left:64px;width:836px;top:712px;display:flex;gap:10px}
-#s6 .links div{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13.5px;color:var(--muted);line-height:1.35}
-#s6 .links b{display:block;font:600 12px "IBM Plex Mono",monospace;color:var(--text);letter-spacing:.05em;margin-bottom:3px}
-#s6 .links .key{border-color:rgba(240,165,58,.5);background:rgba(240,165,58,.07)}
-#s6 .links .key b{color:var(--amber)}
-
-/* ---------- slide 7 ---------- */
-#s7 .dv{position:absolute;left:64px;top:160px;width:700px}
-#s7 .cr{position:absolute;left:800px;top:160px;width:736px}
-#s7 .cap{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
-#s7 .cap h3{font-size:22px;font-weight:600}
-#s7 .cap span{font-size:15px;color:var(--muted)}
-.dev{background:#1b1f24;border-radius:14px;padding:16px;border:1px solid #2c3238;box-shadow:0 20px 40px rgba(0,0,0,.35)}
-.scr{background:#0a0f14;border-radius:4px;overflow:hidden;font-family:"IBM Plex Mono",monospace}
-.cr-scr{background:#0a0f14;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-family:"IBM Plex Mono",monospace}
-#s7 .notes{position:absolute;left:64px;right:64px;top:780px;display:flex;gap:40px;font-size:16px;color:var(--muted)}
-#s7 .notes div{flex:1;padding-left:14px;border-left:2px solid var(--line2);line-height:1.45}
-#s7 .notes b{color:var(--text)}
-
-/* ---------- slide 8 ---------- */
-#s8 .grid{position:absolute;left:64px;right:64px;top:150px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.sc{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px 14px;display:flex;flex-direction:column;min-height:196px}
-.sc .top{display:flex;justify-content:space-between;align-items:center}
-.sc .n{font:600 12.5px "IBM Plex Mono",monospace;color:var(--dim)}
-.sc h4{font-size:19px;font-weight:600;margin-top:8px}
-.sc p{font-size:14.5px;color:var(--muted);line-height:1.42;margin-top:6px;flex:1}
-.sens{display:flex;gap:6px;margin-top:10px}
-.sens span{font:500 11px "IBM Plex Mono",monospace;padding:4px 6px;border-radius:3px;border:1px solid var(--line2);color:var(--muted);display:flex;align-items:center;gap:5px}
-.sens span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
-.sens span.lo::before{background:var(--amber)}
-.sens span.x::before{background:var(--red)}
-.sens span.x{border-style:dashed}
-.sc.demo{background:transparent;border:1px dashed var(--line2)}
-.sc.demo h4{color:var(--cyan)}
-#s8 .end{position:absolute;left:64px;right:64px;top:590px;display:flex;gap:18px}
-#s8 .concl{flex:1.25;padding:24px 28px;border-radius:8px;background:linear-gradient(135deg,rgba(56,195,221,.12),rgba(21,33,48,.9));border:1px solid var(--cyan-d)}
-#s8 .concl .lbl{color:var(--cyan)}
-#s8 .concl q{display:block;font-size:24px;line-height:1.42;font-weight:500;margin-top:12px;quotes:none}
-#s8 .concl .ln{margin-top:16px;font-size:16px;color:var(--muted)}
-#s8 .concl .ln b{color:var(--text)}
-#s8 .fut{flex:1;padding:22px 24px}
-#s8 .fut ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin-top:14px}
-#s8 .fut li{font-size:16px;line-height:1.35;padding-left:18px;position:relative;color:#c8d3de}
-#s8 .fut li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border:2px solid var(--cyan);border-radius:1px}
-
-/* ---------- nav ---------- */
-#nav{position:fixed;right:16px;bottom:14px;display:flex;align-items:center;gap:8px;z-index:10;opacity:.35;transition:opacity .2s}
-#nav:hover{opacity:1}
-#nav button{background:#141d28;border:1px solid #2a3a4d;color:#c8d3de;width:36px;height:36px;border-radius:6px;cursor:pointer;font:500 16px "IBM Plex Mono"}
-#nav span{font:500 13px "IBM Plex Mono";color:#91a2b6;min-width:54px;text-align:center}
-#bar{position:fixed;left:0;bottom:0;height:3px;background:var(--cyan);z-index:10;transition:width .25s}
-body.shot #nav,body.shot #bar{display:none}
-@media print{
-  @page{size:1600px 900px;margin:0}
-  html,body{overflow:visible;background:var(--bg)}
-  #stage{position:static;transform:none!important}
-  .slide{display:block!important;position:relative;page-break-after:always;width:1600px;height:900px}
-  #nav,#bar{display:none}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ============ shared SVG symbols ============ -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-<defs>
-  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 7l1.5-2.5h5L16 7"/></symbol>
-  <symbol id="i-thermal" viewBox="0 0 24 24"><path d="M10 4a2 2 0 0 1 4 0v9.3a4 4 0 1 1-4 0Z"/><path d="M12 9v7"/><path d="M17 6h3M17 9h2M17 12h3"/></symbol>
-  <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><path d="M5 14a5 5 0 0 1 5 5"/><path d="M5 10a9 9 0 0 1 9 9"/><path d="M5 6a13 13 0 0 1 13 13"/></symbol>
-  <symbol id="i-lidar" viewBox="0 0 24 24"><path d="M8 10v8a4 1.5 0 0 0 8 0v-8"/><ellipse cx="12" cy="10" rx="4" ry="1.5"/><path d="M8 14h8"/><path d="M3 5l4 3M21 5l-4 3M12 2v4"/></symbol>
-  <symbol id="i-fog" viewBox="0 0 24 24"><path d="M7 5h10M3 9h18M5 13h12M3 17h18M8 21h8"/></symbol>
-  <symbol id="i-dust" viewBox="0 0 24 24"><circle cx="6" cy="7" r="1.2"/><circle cx="12" cy="5" r="1.6"/><circle cx="17" cy="9" r="1.2"/><circle cx="9" cy="12" r="1.8"/><circle cx="16" cy="15" r="1.6"/><circle cx="6" cy="17" r="1.3"/><circle cx="12" cy="19" r="1.1"/></symbol>
-  <symbol id="i-gps" viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></symbol>
-  <symbol id="i-imu" viewBox="0 0 24 24"><path d="M12 13V3M12 13l8 5M12 13l-8 5"/><path d="M9.5 5.5L12 3l2.5 2.5M17 15.5l3 2.5-3.8.8M4 16l.2 2.9 3.6-.2"/></symbol>
-  <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4.5-5"/><circle cx="12" cy="17" r="1.3"/><path d="M6.5 11.5l1 1M12 9v1.3M17.5 11.5l-1 1"/></symbol>
-  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol>
-  <symbol id="i-display" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M9 21h6M12 17v4"/></symbol>
-  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
-  <symbol id="i-vib" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="1.5"/><path d="M4.5 8v8M19.5 8v8M1.5 10v4M22.5 10v4"/></symbol>
-  <symbol id="i-antenna" viewBox="0 0 24 24"><path d="M12 10v11"/><circle cx="12" cy="8" r="1.8"/><path d="M8.2 4.5a5.5 5.5 0 0 0 0 7M15.8 4.5a5.5 5.5 0 0 1 0 7M5.3 2a9.5 9.5 0 0 0 0 12M18.7 2a9.5 9.5 0 0 1 0 12"/></symbol>
-  <symbol id="i-ai" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15l2.5-6 2.5 6M8 13h3M15 9v6"/></symbol>
-  <symbol id="i-fusion" viewBox="0 0 24 24"><path d="M3 5h4l5 7M3 19h4l5-7M3 12h9M12 12h9M18 9l3 3-3 3"/></symbol>
-  <symbol id="i-target" viewBox="0 0 24 24"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><rect x="8" y="8" width="8" height="8"/></symbol>
-  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3 15a9 9 0 0 1 18 0"/><path d="M3 15h3M18 15h3"/><path d="M12 15l-4-5"/><path d="M5 20h14"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></symbol>
-  <symbol id="i-control" viewBox="0 0 24 24"><rect x="2" y="4" width="9" height="7" rx="1"/><rect x="13" y="4" width="9" height="7" rx="1"/><path d="M2 20h20M7 14l-2 6M17 14l2 6M5 14h14"/></symbol>
-  <symbol id="i-rock" viewBox="0 0 24 24"><path d="M3 19l3.5-8 5-4 6 3.5 3.5 8.5z"/><path d="M11.5 7l1 5 5 -2"/></symbol>
-  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M8 11.5h8M12 15l-3 6M12 15l3 6"/></symbol>
-  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 16V8h11v8"/><path d="M13 11h5l3 3v2"/><path d="M2 16h19"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
-  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
-  <symbol id="i-weight" viewBox="0 0 24 24"><path d="M5 20l2-11h10l2 11z"/><circle cx="12" cy="6" r="2.5"/></symbol>
-  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1"/><path d="M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1"/></symbol>
-
-  <!-- rigid-frame haul truck, side elevation, facing left. 820 x 440 -->
-  <symbol id="truck" viewBox="0 0 820 440">
-    <ellipse cx="410" cy="418" rx="390" ry="11" fill="#000" opacity=".4"/>
-    <!-- hoist cylinder & frame detail -->
-    <rect x="120" y="252" width="648" height="36" fill="#2a3038"/>
-    <rect x="120" y="252" width="648" height="5" fill="#3b434d"/>
-    <path d="M470 252 L520 190" stroke="#5a626c" stroke-width="16"/>
-    <path d="M470 252 L520 190" stroke="#8a929c" stroke-width="5"/>
-    <!-- dump body -->
-    <path d="M236 94 L782 60 L790 80 L754 254 L334 254 L334 130 L236 130 Z" fill="#b48e1f"/>
-    <path d="M236 94 L782 60 L786 70 L236 104 Z" fill="#d7ae3a"/>
-    <path d="M334 130 L754 130 M334 130 L334 254" stroke="#8a6c14" stroke-width="3" fill="none"/>
-    <g stroke="#957515" stroke-width="7">
-      <line x1="420" y1="120" x2="420" y2="252"/><line x1="510" y1="115" x2="510" y2="252"/>
-      <line x1="600" y1="109" x2="598" y2="252"/><line x1="690" y1="104" x2="684" y2="252"/>
-    </g>
-    <path d="M334 222 L754 222" stroke="#8a6c14" stroke-width="5"/>
-    <!-- upper deck + railings -->
-    <rect x="60" y="210" width="276" height="12" fill="#3d4650"/>
-    <path d="M64 210 V176 H148 M100 210 V176 M252 210 V176 H334" stroke="#c9a227" stroke-width="4" fill="none"/>
-    <rect x="236" y="130" width="98" height="80" fill="#2f363e"/>
-    <rect x="244" y="140" width="80" height="8" fill="#3d4650"/><rect x="244" y="156" width="80" height="8" fill="#3d4650"/>
-    <!-- cab -->
-    <path d="M150 130 H236 V210 H144 Z" fill="#c29a22"/>
-    <path d="M158 140 H228 V180 H153 Z" fill="#1a2733" stroke="#0b1016" stroke-width="3"/>
-    <path d="M200 142 L226 142 L226 178 L214 178 Z" fill="#26394a" opacity=".6"/>
-    <rect x="196" y="186" width="30" height="6" fill="#8a6c14"/>
-    <!-- engine hood / radiator -->
-    <rect x="68" y="222" width="86" height="66" fill="#b48e1f"/>
-    <g stroke="#5f4b0e" stroke-width="3"><line x1="76" y1="232" x2="76" y2="280"/><line x1="86" y1="232" x2="86" y2="280"/><line x1="96" y1="232" x2="96" y2="280"/><line x1="106" y1="232" x2="106" y2="280"/></g>
-    <rect x="118" y="236" width="26" height="12" rx="2" fill="#e8e1c8"/>
-    <!-- front bumper -->
-    <rect x="44" y="288" width="126" height="22" rx="3" fill="#2a3038"/>
-    <!-- ladder -->
-    <g stroke="#9aa3ad" stroke-width="3"><line x1="92" y1="222" x2="120" y2="372"/><line x1="112" y1="222" x2="140" y2="372"/>
-      <line x1="97" y1="250" x2="117" y2="250"/><line x1="103" y1="280" x2="123" y2="280"/><line x1="108" y1="310" x2="128" y2="310"/><line x1="114" y1="340" x2="134" y2="340"/></g>
-    <!-- fenders -->
-    <path d="M104 288 A104 104 0 0 1 300 288" stroke="#9c7b1a" stroke-width="14" fill="none"/>
-    <!-- wheels -->
-    <g id="wheel">
-      <circle cx="202" cy="328" r="88" fill="#13171b"/>
-      <circle cx="202" cy="328" r="82" fill="none" stroke="#23282e" stroke-width="10" stroke-dasharray="12 7"/>
-      <circle cx="202" cy="328" r="48" fill="#474e57"/>
-      <circle cx="202" cy="328" r="40" fill="none" stroke="#2f353c" stroke-width="3"/>
-      <circle cx="202" cy="328" r="18" fill="#6b737c"/>
-    </g>
-    <use href="#wheel" x="400"/>
-    <!-- mirror arm -->
-    <path d="M150 150 L114 140" stroke="#2a3038" stroke-width="4"/>
-    <rect x="100" y="126" width="12" height="26" rx="2" fill="#2a3038"/>
-    <!-- sensors (drawn dark, highlighted by callouts) -->
-    <rect x="40" y="292" width="16" height="14" rx="2" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-    <rect x="152" y="120" width="22" height="11" rx="2" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-    <rect x="178" y="120" width="22" height="11" rx="2" fill="#2a1a12" stroke="#f0a53a" stroke-width="2"/>
-    <rect x="240" y="76" width="16" height="16" rx="3" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-    <rect x="102" y="156" width="10" height="9" rx="1" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-    <rect x="762" y="256" width="14" height="12" rx="2" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-    <path d="M320 86 V46" stroke="#9aa3ad" stroke-width="3"/><circle cx="320" cy="44" r="4" fill="#9aa3ad"/>
-    <path d="M296 88 a10 7 0 0 1 20 0 Z" fill="#dfe6ec"/>
-    <rect x="60" y="164" width="10" height="12" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-  </symbol>
-
-  <!-- haul truck seen from behind (for camera views) 200 x 160 -->
-  <symbol id="truckRear" viewBox="0 0 200 160">
-    <path d="M10 20 L190 20 L180 92 L20 92 Z" fill="#a8841c"/>
-    <path d="M10 20 L190 20 L188 30 L12 30 Z" fill="#c9a227"/>
-    <rect x="30" y="92" width="140" height="22" fill="#2a3038"/>
-    <rect x="4" y="96" width="48" height="62" rx="10" fill="#15191d"/>
-    <rect x="148" y="96" width="48" height="62" rx="10" fill="#15191d"/>
-    <rect x="36" y="98" width="14" height="8" fill="#e5484d"/><rect x="150" y="98" width="14" height="8" fill="#e5484d"/>
-    <path d="M60 40 H140 M60 60 H140" stroke="#86680f" stroke-width="4"/>
-  </symbol>
-
-  <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
-  <filter id="blur14"><feGaussianBlur stdDeviation="14"/></filter>
-  <filter id="blur30"><feGaussianBlur stdDeviation="30"/></filter>
-  <filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
-</defs>
-</svg>
-
-<div id="stage">
-
-<!-- ======================= 1 · TITLE ======================= -->
-<section class="slide" id="s1">
-  <div class="art">
-    <svg viewBox="0 0 930 900" width="930" height="900">
-      <defs>
-        <linearGradient id="s1sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d131b" stop-opacity="0"/><stop offset=".55" stop-color="#1c2631"/><stop offset="1" stop-color="#2a2622"/></linearGradient>
-        <linearGradient id="s1road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a2e"/><stop offset="1" stop-color="#2a211b"/></linearGradient>
-        <linearGradient id="s1fade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0d131b"/><stop offset=".18" stop-color="#0d131b" stop-opacity="0"/></linearGradient>
-      </defs>
-      <rect width="930" height="900" fill="url(#s1sky)"/>
-      <!-- distant bench silhouettes -->
-      <path d="M0 470 L120 458 L140 440 L330 430 L350 410 L560 400 L580 382 L930 372 L930 560 L0 560Z" fill="#241e1a" opacity=".85"/>
-      <path d="M0 520 L200 508 L220 492 L480 482 L500 466 L930 452 L930 600 L0 600Z" fill="#2e2620"/>
-      <!-- haul road -->
-      <path d="M0 640 L930 612 L930 900 L0 900Z" fill="url(#s1road)"/>
-      <path d="M0 640 L930 612" stroke="#6b5646" stroke-width="3"/>
-      <path d="M0 672 L930 646" stroke="#5a4838" stroke-width="2" stroke-dasharray="30 26" opacity=".6"/>
-      <!-- dust haze -->
-      <ellipse cx="820" cy="600" rx="260" ry="70" fill="#8d7b6a" opacity=".25" filter="url(#blur30)"/>
-      <ellipse cx="150" cy="560" rx="260" ry="60" fill="#7a8894" opacity=".18" filter="url(#blur30)"/>
-      <!-- truck -->
-      <g transform="translate(70 238) scale(1.0)">
-        <use href="#truck" x="0" y="0" width="820" height="440"/>
-        <!-- radar cone -->
-        <path d="M40 299 L-80 250 L-80 350 Z" fill="#38c3dd" opacity=".08"/>
-        <path d="M152 125 L-80 60 L-80 200 Z" fill="#38c3dd" opacity=".05"/>
-      </g>
-      <rect width="930" height="900" fill="url(#s1fade)"/>
-      <!-- callouts (truck offset 70,238) -->
-      <g font-family="IBM Plex Mono" font-size="14" fill="#c8d3de" stroke-linecap="round">
-        <g stroke="#38c3dd" stroke-width="1.3" fill="none">
-          <path d="M233 364 V300 H300"/>   <!-- front cam 163,126 -->
-          <path d="M318 322 V246 H400"/>    <!-- lidar 248,84 -->
-          <path d="M390 280 V200 H470"/>   <!-- gps 320,42 -->
-          <path d="M118 537 V760 H160"/>    <!-- radar 48,299 -->
-          <path d="M177 400 V352 H130"/>    <!-- side cam 107,160 -->
-          <path d="M839 500 V740 H790"/>    <!-- rear cam 769,262 -->
-        </g>
-        <g fill="#38c3dd"><circle cx="233" cy="364" r="4"/><circle cx="318" cy="322" r="4"/><circle cx="390" cy="280" r="4"/><circle cx="118" cy="537" r="4"/><circle cx="177" cy="400" r="4"/><circle cx="839" cy="500" r="4"/></g>
-        <text x="306" y="305">RGB + THERMAL CAMERA</text>
-        <text x="406" y="251">LiDAR</text>
-        <text x="476" y="205">GPS · 4G/5G</text>
-        <text x="166" y="765">77–81 GHz RADAR</text>
-        <text x="124" y="357" text-anchor="end">SIDE CAMERA</text>
-        <text x="784" y="745" text-anchor="end">REAR CAMERA</text>
-      </g>
-    </svg>
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#152130"/><path d="M6 22l6-12 5 8 3-4 6 8z" fill="none" stroke="#38c3dd" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    <div><b>MINESAFE-VISION</b><small>AI safety assistance · fog &amp; low-visibility prototype</small></div>
   </div>
-  <div class="left">
-    <div class="tag">Mining safety · Engineering project</div>
-    <h1>MineSafe<span>-</span>Vision</h1>
-    <div class="subt">AI-Enabled Safety &amp; Monitoring System for Mine Vehicles in Fog and Low-Visibility Conditions</div>
-    <div class="rule"></div>
-    <div class="idea">An <b>extra set of eyes</b> for open-cast haul trucks. Cameras, radar, LiDAR and AI work together to spot hazards and <b>warn the driver early</b>.</div>
-    <div class="pills">
-      <span class="pill">Cameras + Thermal</span><span class="pill">mmWave Radar + LiDAR</span><span class="pill">AI Risk Engine</span>
-    </div>
+  <div class="modes" role="tablist" aria-label="Prototype mode">
+    <button role="tab" data-mode="live" id="tabLive">LIVE CAMERA MODE</button>
+    <button role="tab" data-mode="sim" id="tabSim">SIMULATION MODE</button>
   </div>
-  <div class="team"><b>Project team:</b> [Team members] &nbsp;·&nbsp; <b>Guide:</b> [Faculty guide]<br>[Department / Institute] &nbsp;·&nbsp; 2026</div>
-</section>
+  <div class="hdr-right">
+    <span class="truck-id">TRUCK M-102 <i class="dot" id="hdrLinkDot"></i><span id="hdrLink">ONLINE</span></span>
+    <span class="clock mono" id="clock">--:--:--</span>
+    <a class="btn ghost" href="presentation/" target="_blank" rel="noopener">SLIDES</a>
+    <button class="btn reset" id="btnReset">RESET SYSTEM</button>
+  </div>
+</header>
 
-<!-- ======================= 2 · PROBLEM ======================= -->
-<section class="slide" id="s2">
-  <div class="hdr"><div class="kicker">02 — The problem</div><h2>Haul roads become dangerous when the driver can’t see</h2></div>
-  <div class="scene">
-    <svg viewBox="0 0 860 600" width="860" height="600">
-      <defs>
-        <linearGradient id="s2sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5f6a73"/><stop offset="1" stop-color="#8d9296"/></linearGradient>
-        <linearGradient id="s2fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9bfc3" stop-opacity=".85"/><stop offset=".6" stop-color="#b9bfc3" stop-opacity=".35"/><stop offset="1" stop-color="#b9bfc3" stop-opacity="0"/></linearGradient>
-        <linearGradient id="s2road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f6c55"/><stop offset="1" stop-color="#6d4f3d"/></linearGradient>
-      </defs>
-      <rect width="860" height="600" fill="url(#s2sky)"/>
-      <g id="benches"></g>
-      <!-- main haul road on lower bench, curving into the pit -->
-      <path d="M-20 600 L180 600 C 330 520 470 470 880 430 L880 392 C 520 420 320 452 120 540 Z" fill="url(#s2road)"/>
-      <path d="M180 600 C 330 520 470 470 880 430" stroke="#5a3f30" stroke-width="10" fill="none"/>
-      <path d="M120 540 C 320 452 520 420 880 392" stroke="#a3826a" stroke-width="3" fill="none" opacity=".7"/>
-      <!-- vehicle ahead, hidden in fog -->
-      <g opacity=".42"><use href="#truck" x="560" y="330" width="170" height="91"/></g>
-      <!-- dust cloud behind it -->
-      <ellipse cx="790" cy="410" rx="120" ry="40" fill="#b9a38f" opacity=".7" filter="url(#blur14)"/>
-      <!-- fog layers -->
-      <rect x="0" y="0" width="860" height="470" fill="url(#s2fog)"/>
-      <ellipse cx="420" cy="360" rx="420" ry="60" fill="#c3c8cb" opacity=".45" filter="url(#blur30)"/>
-      <!-- rocks on road -->
-      <g fill="#4d3a2e" stroke="#2f231b" stroke-width="1.5">
-        <path d="M300 540 l14-18 22-6 14 10 4 16z"/><path d="M345 548 l8-10 12-2 8 8 1 6z"/><path d="M270 556 l6-8 10 0 6 8z"/>
-      </g>
-      <!-- worker at road edge -->
-      <g transform="translate(468 468)">
-        <circle cx="0" cy="-26" r="4.5" fill="#e8d9b8"/><rect x="-5" y="-31" width="10" height="3" fill="#f5f5f5"/>
-        <path d="M-6 -20 h12 v16 h-12z" fill="#f07a1a"/><path d="M-6 -12 h12" stroke="#e6e6e6" stroke-width="2"/>
-        <path d="M-4 -4 l-2 14 M4 -4 l2 14" stroke="#2a3038" stroke-width="3.5"/>
-      </g>
-      <!-- our truck's blind-spot zone (foreground, bottom-left) -->
-      <path d="M0 600 L0 470 L150 600Z" fill="#e5484d" opacity=".12"/>
-      <!-- annotations -->
-      <g font-family="IBM Plex Mono" font-size="13" font-weight="500" fill="#0d131b">
-        <g stroke="#0d131b" stroke-width="1.3" fill="none">
-          <path d="M640 360 L640 300 L700 300"/><path d="M322 516 L322 470 L230 470"/><path d="M468 440 L468 400 L540 400"/><path d="M40 560 L40 520 L90 520"/><path d="M150 180 L150 150 L210 150"/>
-        </g>
-        <g fill="#0d131b"><circle cx="640" cy="360" r="3.5"/><circle cx="322" cy="516" r="3.5"/><circle cx="468" cy="440" r="3.5"/><circle cx="40" cy="560" r="3.5"/><circle cx="150" cy="180" r="3.5"/></g>
-        <rect x="700" y="289" width="150" height="22" fill="#e7edf3" opacity=".85"/><text x="706" y="305">VEHICLE IN FOG</text>
-        <rect x="120" y="459" width="110" height="22" fill="#e7edf3" opacity=".85"/><text x="126" y="475">LOOSE ROCKS</text>
-        <rect x="540" y="389" width="130" height="22" fill="#e7edf3" opacity=".85"/><text x="546" y="405">WORKER ON FOOT</text>
-        <rect x="90" y="509" width="100" height="22" fill="#e7edf3" opacity=".85"/><text x="96" y="525">BLIND SPOT</text>
-        <rect x="210" y="139" width="190" height="22" fill="#e7edf3" opacity=".85"/><text x="216" y="155">BENCH HIDDEN BY FOG</text>
-      </g>
-      <text x="16" y="28" font-family="IBM Plex Mono" font-size="12" fill="#1b232c" opacity=".8">OPEN-CAST IRON ORE MINE · HAUL ROAD · MORNING FOG (ILLUSTRATION)</text>
-    </svg>
+<!-- ============================ CONTROL DOCK ============================ -->
+<nav class="dock" aria-label="Demonstration controls">
+  <div class="grp">
+    <span class="glbl">SCENARIO</span>
+    <button class="btn scn" data-scn="clear">CLEAR ROAD</button>
+    <button class="btn scn" data-scn="vehicle">VEHICLE AHEAD</button>
+    <button class="btn scn" data-scn="person">PERSON AHEAD</button>
+    <button class="btn scn" data-scn="rock">ROCK OBSTACLE</button>
   </div>
-  <div class="list">
-    <div class="hz"><svg class="ico"><use href="#i-fog"/></svg><div><h4>Heavy fog</h4><p>Winter and monsoon fog hides the road and other vehicles.</p></div></div>
-    <div class="hz"><svg class="ico"><use href="#i-dust"/></svg><div><h4>Dense dust</h4><p>Blasting, loading and passing trucks raise thick dust clouds.</p></div></div>
-    <div class="hz"><svg class="ico"><use href="#i-rock"/></svg><div><h4>Rocks and stones on the road</h4><p>Spillage and loose boulders lie directly in the truck’s path.</p></div></div>
-    <div class="hz"><svg class="ico"><use href="#i-eye"/></svg><div><h4>Large blind spots</h4><p>From a high cab, big areas around the truck are invisible.</p></div></div>
-    <div class="hz"><svg class="ico"><use href="#i-person"/></svg><div><h4>Moving vehicles and workers</h4><p>Dumpers, dozers, light vehicles and people share the roads.</p></div></div>
-    <div class="hz"><svg class="ico"><use href="#i-weight"/></svg><div><h4>Loaded trucks, night shifts</h4><p>A full truck needs longer to stop; darkness slows reaction.</p></div></div>
+  <div class="grp">
+    <span class="glbl">ENVIRONMENT</span>
+    <button class="btn env fog" id="btnFog">HEAVY FOG</button>
+    <button class="btn env dust" id="btnDust">DENSE DUST</button>
   </div>
-  <div class="why">
-    <h4>Why it is dangerous</h4>
-    <p>In thick fog or dust the driver may only see a hazard when the truck is already <b>inside its own stopping distance</b>, too late to stop safely.</p>
+  <div class="grp">
+    <span class="glbl">FAULT</span>
+    <button class="btn fault" id="btnFault">SIMULATE RADAR FAILURE</button>
   </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>02 / 08</span></div>
-</section>
+  <div class="grp slider">
+    <span class="glbl">SPEED</span>
+    <button class="btn step" data-step="speed" data-d="-2" aria-label="Decrease speed">−</button>
+    <input type="range" id="inSpeed" min="0" max="60" step="1" aria-label="Vehicle speed">
+    <button class="btn step" data-step="speed" data-d="2" aria-label="Increase speed">+</button>
+    <output id="outSpeed" class="mono">28 km/h</output>
+  </div>
+  <div class="grp slider">
+    <span class="glbl">SIM OBJECT DIST</span>
+    <input type="range" id="inDist" min="2" max="120" step="0.5" aria-label="Simulated object distance">
+    <output id="outDist" class="mono">18 m</output>
+    <label class="chk" title="Simulated object closes in at the relative speed"><input type="checkbox" id="inMotion"> MOTION</label>
+  </div>
+  <div class="grp">
+    <span class="glbl">ALERT SOUND</span>
+    <button class="btn" id="btnSound">ENABLE ALERT SOUND</button>
+    <button class="btn" id="btnMute" disabled>MUTE ALERT</button>
+  </div>
+</nav>
 
-<!-- ======================= 3 · SOLUTION ======================= -->
-<section class="slide" id="s3">
-  <div class="hdr"><div class="kicker">03 — Our proposed solution</div><h2>Give the truck an extra set of eyes <span class="sub">It assists the driver. It does not replace them.</span></h2></div>
-  <div class="flow">
-    <div class="blk"><div class="n">01</div><svg class="ico"><use href="#i-cam"/></svg><h3>Sensors</h3><p>Cameras, thermal camera, radar, LiDAR and vehicle sensors watch all around the truck.</p></div>
-    <div class="arr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M14 6l6 6-6 6"/></svg></div>
-    <div class="blk"><div class="n">02</div><svg class="ico"><use href="#i-ai"/></svg><h3>AI</h3><p>An object-detection model (YOLO) finds people, vehicles and rocks in the camera images.</p></div>
-    <div class="arr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M14 6l6 6-6 6"/></svg></div>
-    <div class="blk hl"><div class="n">03</div><svg class="ico"><use href="#i-fusion"/></svg><h3>Sensor fusion</h3><p>Combines all sensors into one reliable picture, even when fog or dust blinds one of them.</p></div>
-    <div class="arr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M14 6l6 6-6 6"/></svg></div>
-    <div class="blk"><div class="n">04</div><svg class="ico"><use href="#i-target"/></svg><h3>Obstacle detection</h3><p>Confirms what the object is, where it is and how far away it is.</p></div>
-    <div class="arr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M14 6l6 6-6 6"/></svg></div>
-    <div class="blk"><div class="n">05</div><svg class="ico"><use href="#i-gauge"/></svg><h3>Risk calculation</h3><p>Checks distance, truck speed, closing speed, visibility and load.</p></div>
-    <div class="arr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15M14 6l6 6-6 6"/></svg></div>
-    <div class="blk warn"><div class="n">06</div><svg class="ico"><use href="#i-alert"/></svg><h3>Driver warning</h3><p>Screen, buzzer and seat vibration. Runs on the truck with no network needed.</p></div>
-  </div>
-  <div class="wire"><span>Wi-Fi / 4G · optional</span></div>
-  <div class="cr"><div class="blk"><div class="n">07</div><svg class="ico"><use href="#i-control"/></svg><h3>Control room</h3><p>Sees every truck’s position, risk level and alerts.</p></div></div>
-
-  <div class="ex">
-    <div class="lbl">Example: what happens in one second on a foggy haul road</div>
-    <div class="exrow">
-      <div class="ev"><small>Camera + AI</small><b>Obstacle ahead</b></div><span class="plus">+</span>
-      <div class="ev"><small>Radar</small><b>18 m away</b></div><span class="plus">+</span>
-      <div class="ev"><small>Wheel speed</small><b>28 km/h, loaded</b></div><span class="plus">+</span>
-      <div class="ev"><small>Visibility</small><b>LOW</b></div><span class="plus">=</span>
-      <div class="res"><small>RISK: CRITICAL</small><b>“Obstacle ahead – 18 m”</b></div>
-    </div>
-  </div>
-  <div class="note">
-    <div><b>Why many sensors?</b> Every sensor has a weakness. Cameras struggle in fog and dust, radar can’t tell a rock from a person. Together they cover each other.</div>
-    <div><b>Why local?</b> All detection and warnings run on an edge computer inside the truck, so the driver is warned even with no signal.</div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>03 / 08</span></div>
-</section>
-
-<!-- ======================= 4 · HOW IT WORKS ======================= -->
-<section class="slide" id="s4">
-  <div class="hdr"><div class="kicker">04 — How the system works</div><h2>Sense → Measure → Analyse → Calculate risk → Warn</h2></div>
-  <div class="steps">
-    <div class="st"><div class="n">1 · SENSING</div><h3>Collect data</h3><ul><li>Cameras + thermal: ~30 frames/s</li><li>Radar ~20 Hz · LiDAR ~10 Hz</li><li>Speed, IMU, GPS, visibility</li></ul></div>
-    <div class="st"><div class="n">2 · MEASUREMENT</div><h3>Measure the world</h3><ul><li>Radar: distance, closing speed</li><li>LiDAR: 3D position and size</li><li>Wheel speed: truck speed</li><li>Visibility: how clear the air is</li></ul></div>
-    <div class="st"><div class="n">3 · AI ANALYSIS</div><h3>Recognise objects</h3><ul><li>YOLO labels person / vehicle / rock</li><li>Runs on RGB and thermal images</li><li>Matched to the radar/LiDAR echo in the same direction</li></ul></div>
-    <div class="st"><div class="n">4 · RISK</div><h3>Compare gaps</h3><ul><li>Safe gap needed at this speed</li><li>Compare with measured gap</li><li>Add visibility, sensor health</li></ul></div>
-    <div class="st last"><div class="n">5 · WARNING</div><h3>Tell the driver</h3><ul><li>SAFE / CAUTION / CRITICAL</li><li>Screen + buzzer + vibration</li><li>Event sent to control room</li></ul></div>
-  </div>
-  <div class="loop">The whole loop repeats about <b>10 times per second</b> · design target: warning within <b>0.2 s</b> of detection</div>
-  <div class="bot">
-    <div class="card dist">
-      <h4>How distance is measured</h4>
-      <svg viewBox="0 0 390 110" width="390" height="110" style="margin-top:12px">
-        <rect x="0" y="40" width="70" height="40" rx="3" fill="#2a3038"/><rect x="62" y="52" width="10" height="12" fill="#0f2a33" stroke="#38c3dd" stroke-width="2"/>
-        <g fill="none" stroke="#38c3dd" stroke-width="2" opacity=".9"><path d="M88 44a24 24 0 0 1 0 32"/><path d="M104 36a36 36 0 0 1 0 48" opacity=".7"/><path d="M120 28a48 48 0 0 1 0 64" opacity=".45"/></g>
-        <path d="M300 82 l14-24 24-8 18 12 6 20z" fill="#5a4436" stroke="#2f231b"/>
-        <path d="M86 98 H300" stroke="#62748a" stroke-width="1.3"/><path d="M86 93v10M300 93v10" stroke="#62748a" stroke-width="1.3"/>
-        <text x="193" y="93" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#c8d3de">18.0 m</text>
-        <g fill="none" stroke="#f0a53a" stroke-width="1.6" stroke-dasharray="4 4"><path d="M296 60 C 240 40 180 40 130 56"/></g>
-        <text x="220" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#f0a53a">echo</text>
-      </svg>
-      <p><b>Radar</b> sends a radio signal and times the echo. Time → <b>distance</b>. The change in echo frequency → <b>closing speed</b>. Works in fog and dust.</p>
-      <p><b>LiDAR</b> adds exact 3D position and size. <b>Camera</b> tells us <i>what</i> the object is.</p>
-    </div>
-    <div class="card form">
-      <h4>How risk is calculated · dynamic safe gap</h4>
-      <div class="eq">Safe gap = (<span>reaction</span> + <span>braking</span> distance)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× load factor × visibility factor</div>
-      <div class="rules">
-        <span class="chip critical">Critical</span><span>Obstacle closer than the safe gap, or very low visibility + other risks</span>
-        <span class="chip caution">Caution</span><span>Within 2× the safe gap, object approaching, or low visibility</span>
-        <span class="chip safe">Safe</span><span>More than 2× the safe gap and good visibility</span>
+<main>
+  <!-- ============================ ROW 1: CAMERA + STATUS ============================ -->
+  <section class="row1">
+    <div class="panel cam">
+      <div class="phead">
+        <h2>LIVE CAMERA</h2>
+        <span class="status off" id="camStatus"><i class="dot"></i><span>CAMERA OFFLINE</span></span>
+        <span class="tag" id="sceneTag">SIMULATED SCENE</span>
+        <span class="spacer"></span>
+        <select id="camSelect" class="sel" hidden aria-label="Camera device"></select>
+        <button class="btn primary" id="btnCamStart">START CAMERA</button>
+        <button class="btn" id="btnCamStop" disabled>STOP CAMERA</button>
       </div>
-      <p style="font-size:14px;color:var(--dim);margin-top:12px;line-height:1.45">Reaction time 1.5 s, braking 3 m/s², loaded ×1.25, low visibility ×1.25, very low ×1.5. Starting values, to be tuned with the mine’s own braking test data.</p>
-    </div>
-    <div class="card calc" id="calc">
-      <h4>Try it: same obstacle, different risk</h4>
-      <div class="row"><label>Truck speed</label><input type="range" id="cSpeed" min="5" max="45" value="35"><span class="v" id="vSpeed">35 km/h</span></div>
-      <div class="row"><label>Obstacle</label><input type="range" id="cDist" min="5" max="100" value="20"><span class="v" id="vDist">20 m</span></div>
-      <div class="row"><label>Visibility</label><div class="seg" data-k="vis"><button data-v="1">Good</button><button data-v="1.25" class="on">Low</button><button data-v="1.5">Very low</button></div></div>
-      <div class="row"><label>Load</label><div class="seg" data-k="load"><button data-v="1">Empty</button><button data-v="1.25" class="on">Loaded</button></div></div>
-      <div class="out"><span class="g">Safe gap needed: <b id="cGap">47 m</b></span><span class="chip critical" id="cRisk">Critical</span></div>
-      <div class="ex2">Obstacle 20 m away, loaded, low visibility:<br>at 10 km/h → <b style="color:var(--amber)">CAUTION</b> &nbsp;·&nbsp; at 35 km/h → <b style="color:#ff6b6f">CRITICAL</b></div>
-    </div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>04 / 08</span></div>
-</section>
-
-<!-- ======================= 5 · FOG & DUST ======================= -->
-<section class="slide" id="s5">
-  <div class="hdr"><div class="kicker">05 — Heavy fog &amp; dense dust</div><h2>When the windscreen shows nothing, the sensors still see</h2></div>
-  <div class="cab">
-    <svg viewBox="0 0 960 640" width="960" height="640">
-      <defs>
-        <linearGradient id="s5out" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7bcbf"/><stop offset=".55" stop-color="#aaa39a"/><stop offset="1" stop-color="#8f8070"/></linearGradient>
-        <linearGradient id="s5dash" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#23292f"/><stop offset="1" stop-color="#121619"/></linearGradient>
-        <linearGradient id="thermBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1f33"/><stop offset="1" stop-color="#2c2140"/></linearGradient>
-        <radialGradient id="hot" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6d8"/><stop offset=".45" stop-color="#ffb347"/><stop offset="1" stop-color="#b8325a" stop-opacity="0"/></radialGradient>
-        <linearGradient id="rgbFog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ea3a6"/><stop offset="1" stop-color="#8a8076"/></linearGradient>
-      </defs>
-      <!-- outside world -->
-      <rect width="960" height="640" fill="url(#s5out)"/>
-      <path d="M330 640 L455 300 L505 300 L700 640Z" fill="#7d6a5a" opacity=".55"/>
-      <path d="M455 300 L330 640 M505 300 L700 640" stroke="#6a5748" stroke-width="6" opacity=".35"/>
-      <g opacity=".13"><use href="#truckRear" x="425" y="255" width="110" height="88"/></g>
-      <ellipse cx="480" cy="330" rx="420" ry="120" fill="#c2c5c6" opacity=".7" filter="url(#blur30)"/>
-      <ellipse cx="300" cy="430" rx="260" ry="90" fill="#a6917c" opacity=".55" filter="url(#blur30)"/>
-      <ellipse cx="700" cy="420" rx="260" ry="90" fill="#a8998a" opacity=".5" filter="url(#blur30)"/>
-      <!-- cab frame (evenodd leaves the windscreen open) -->
-      <path fill-rule="evenodd" fill="#0f1317" d="M0 0 H960 V640 H0 Z M92 70 Q480 40 868 70 L904 408 Q480 392 56 408 Z"/>
-      <path d="M92 70 Q480 40 868 70 L904 408 Q480 392 56 408 Z" fill="none" stroke="#2a3137" stroke-width="6"/>
-      <!-- wiper -->
-      <path d="M260 404 L470 250" stroke="#0b0e11" stroke-width="5" stroke-linecap="round"/>
-      <!-- dashboard -->
-      <path d="M0 440 Q480 410 960 440 L960 640 L0 640Z" fill="url(#s5dash)"/>
-      <!-- steering wheel -->
-      <path d="M40 640 A170 120 0 0 1 380 640" fill="none" stroke="#0a0c0e" stroke-width="30"/>
-      <path d="M210 640 L210 590" stroke="#0a0c0e" stroke-width="26"/>
-      <!-- buzzer & vibration tags -->
-      <g font-family="IBM Plex Mono" font-size="12.5" fill="#e7edf3">
-        <circle cx="470" cy="470" r="12" fill="#2a2d31" stroke="#e5484d" stroke-width="2"/>
-        <g stroke="#e5484d" stroke-width="2" fill="none" opacity=".9"><path d="M488 460a14 14 0 0 1 0 20"/><path d="M496 454a24 24 0 0 1 0 32"/></g>
-        <text x="410" y="508" fill="#ff8a8d">BUZZER · FAST BEEP</text>
-        <rect x="30" y="455" width="170" height="26" rx="3" fill="#1d2126" stroke="#e5484d"/>
-        <text x="40" y="473" fill="#ff8a8d">SEAT VIBRATION · ON</text>
-      </g>
-
-      <!-- rugged display mounted on dash -->
-      <g transform="translate(548 340)">
-        <rect x="-8" y="140" width="40" height="160" fill="#0a0c0e"/>
-        <rect x="0" y="0" width="390" height="286" rx="12" fill="#1b1f24" stroke="#2f363d" stroke-width="2"/>
-        <rect x="12" y="12" width="366" height="262" rx="3" fill="#0a0f14"/>
-        <g font-family="IBM Plex Mono">
-          <text x="22" y="30" font-size="10.5" fill="#38c3dd" font-weight="600">MINESAFE-VISION</text>
-          <text x="368" y="30" font-size="10.5" fill="#91a2b6" text-anchor="end">T-03 · LOADED</text>
-          <!-- RGB feed -->
-          <rect x="22" y="38" width="170" height="100" fill="url(#rgbFog)"/>
-          <path d="M80 138 L102 80 L112 80 L150 138Z" fill="#7d6a5a" opacity=".35"/>
-          <text x="27" y="51" font-size="9" fill="#1d252c">RGB · LOW CONF.</text>
-          <!-- thermal feed -->
-          <rect x="198" y="38" width="170" height="100" fill="url(#thermBg)"/>
-          <ellipse cx="283" cy="92" rx="36" ry="24" fill="url(#hot)" opacity=".9"/>
-          <rect x="262" y="78" width="42" height="28" fill="#ffcf7a" opacity=".55"/>
-          <rect x="258" y="100" width="12" height="16" fill="#fff0c8" opacity=".8"/><rect x="296" y="100" width="12" height="16" fill="#fff0c8" opacity=".8"/>
-          <rect x="250" y="68" width="66" height="54" fill="none" stroke="#e5484d" stroke-width="2"/>
-          <rect x="250" y="58" width="66" height="11" fill="#e5484d"/><text x="253" y="66.5" font-size="8.5" fill="#fff">VEHICLE 0.91</text>
-          <text x="203" y="51" font-size="9" fill="#b9a8d6">THERMAL</text>
-          <!-- readouts -->
-          <text x="22" y="162" font-size="9" fill="#62748a">DISTANCE (RADAR)</text>
-          <text x="22" y="192" font-size="30" font-weight="600" fill="#ff6b6f">18 m</text>
-          <text x="140" y="162" font-size="9" fill="#62748a">SPEED</text>
-          <text x="140" y="192" font-size="24" font-weight="600" fill="#e7edf3">28</text><text x="176" y="192" font-size="11" fill="#91a2b6">km/h</text>
-          <text x="244" y="162" font-size="9" fill="#62748a">VISIBILITY</text>
-          <text x="244" y="190" font-size="18" font-weight="600" fill="#f0a53a">LOW</text>
-          <text x="244" y="204" font-size="9" fill="#91a2b6">safe gap 34 m</text>
-          <!-- risk band -->
-          <rect x="22" y="212" width="346" height="30" fill="#e5484d"/>
-          <text x="195" y="232" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">CRITICAL · OBSTACLE AHEAD 18 m</text>
-          <!-- sensor row -->
-          <g font-size="9" fill="#91a2b6">
-            <circle cx="28" cy="258" r="3.5" fill="#f0a53a"/><text x="35" y="261">RGB</text>
-            <circle cx="72" cy="258" r="3.5" fill="#3fb950"/><text x="79" y="261">THERM</text>
-            <circle cx="128" cy="258" r="3.5" fill="#3fb950"/><text x="135" y="261">RADAR</text>
-            <circle cx="184" cy="258" r="3.5" fill="#3fb950"/><text x="191" y="261">LiDAR</text>
-            <circle cx="240" cy="258" r="3.5" fill="#3fb950"/><text x="247" y="261">GPS</text>
-            <circle cx="284" cy="258" r="3.5" fill="#3fb950"/><text x="291" y="261">LINK</text>
-          </g>
-        </g>
-      </g>
-      <!-- callout on windscreen -->
-      <g font-family="IBM Plex Mono" font-size="13">
-        <rect x="120" y="96" width="330" height="48" rx="4" fill="#0d131b" opacity=".82"/>
-        <text x="134" y="116" fill="#e7edf3">DRIVER’S VIEW: ~20–30 m visible</text>
-        <text x="134" y="134" fill="#91a2b6">vehicle ahead almost invisible</text>
-      </g>
-    </svg>
-  </div>
-  <div class="side">
-    <div class="lbl" style="margin-bottom:10px">Why no single sensor is enough</div>
-    <table class="mx">
-      <tr><th></th><th>Night</th><th>Heavy fog</th><th>Dense dust</th><th>Gives distance</th><th>Knows what it is</th></tr>
-      <tr><td>RGB camera</td><td><span class="d a"></span></td><td><span class="d r"></span></td><td><span class="d r"></span></td><td><span class="d a"></span></td><td><span class="d g"></span></td></tr>
-      <tr><td>Thermal</td><td><span class="d g"></span></td><td><span class="d a"></span></td><td><span class="d a"></span></td><td><span class="d r"></span></td><td><span class="d a"></span></td></tr>
-      <tr><td>Radar</td><td><span class="d g"></span></td><td><span class="d g"></span></td><td><span class="d g"></span></td><td><span class="d g"></span></td><td><span class="d r"></span></td></tr>
-      <tr><td>LiDAR</td><td><span class="d g"></span></td><td><span class="d a"></span></td><td><span class="d r"></span></td><td><span class="d g"></span></td><td><span class="d a"></span></td></tr>
-    </table>
-    <div class="leg"><span><i class="d g"></i>Good</span><span><i class="d a"></i>Reduced</span><span><i class="d r"></i>Poor / no</span></div>
-    <div class="how"><h4>In heavy fog</h4><p>The visibility sensor reports LOW, so the system raises its safety margin. <b>Radar</b> keeps measuring distance. <b>Thermal</b> still picks up warm engines and people at shorter range. The camera result is marked “low confidence”.</p></div>
-    <div class="how"><h4>In dense dust</h4><p>RGB camera and LiDAR are badly affected. <b>Radar becomes the main ranging sensor</b> and the object is tracked from the last good camera frame. If only radar sees it, the warning says “Object ahead” instead of guessing its type.</p></div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>05 / 08</span></div>
-</section>
-
-<!-- ======================= 6 · HARDWARE ======================= -->
-<section class="slide" id="s6">
-  <div class="hdr"><div class="kicker">06 — Hardware &amp; technology</div><h2>What is fitted on the truck</h2></div>
-  <div class="diag">
-    <svg viewBox="-20 -60 880 560" width="860" height="560">
-      <defs><pattern id="grid6" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#18232f" stroke-width="1"/></pattern></defs>
-      <rect x="-20" y="-60" width="880" height="560" fill="url(#grid6)"/>
-      <use href="#truck" x="10" y="0" width="820" height="440"/>
-      <!-- coverage hints -->
-      <path d="M50 299 L-20 262 L-20 336Z" fill="#38c3dd" opacity=".12"/>
-      <!-- numbered callouts (truck offset +10,0) -->
-      <g font-family="IBM Plex Mono" font-size="14" font-weight="600">
-        <g stroke="#38c3dd" stroke-width="1.3" fill="none">
-          <path d="M173 120 V-10"/><path d="M199 120 L230 -10"/><path d="M258 78 L300 -10"/><path d="M330 40 L380 -10"/>
-          <path d="M112 160 L40 120"/><path d="M75 170 L20 60"/><path d="M58 299 L20 380"/>
-          <path d="M220 190 H318 V470"/><path d="M212 328 L150 470"/><path d="M440 270 L470 470"/><path d="M779 262 L800 470"/>
-        </g>
-        <g fill="#0d131b" stroke="#38c3dd" stroke-width="1.6">
-          <circle cx="173" cy="-24" r="13"/><circle cx="232" cy="-24" r="13"/><circle cx="300" cy="-24" r="13"/><circle cx="386" cy="-24" r="13"/>
-          <circle cx="32" cy="116" r="13"/><circle cx="14" cy="46" r="13"/><circle cx="16" cy="394" r="13"/>
-          <circle cx="318" cy="482" r="13"/><circle cx="148" cy="482" r="13"/><circle cx="472" cy="482" r="13"/><circle cx="802" cy="482" r="13"/>
-        </g>
-        <g fill="#38c3dd" text-anchor="middle">
-          <text x="173" y="-19">1</text><text x="232" y="-19">2</text><text x="300" y="-19">4</text><text x="386" y="-19">6</text>
-          <text x="32" y="121">1</text><text x="14" y="51">5</text><text x="16" y="399">3</text>
-          <text x="318" y="487">9</text><text x="148" y="487">8</text><text x="472" y="487">7</text><text x="802" y="487">1</text>
-        </g>
-      </g>
-    </svg>
-  </div>
-  <div class="groups">
-    <div class="grp wide"><h4>Sensing: see the surroundings</h4>
-      <div class="cols">
-        <div class="hw"><svg class="ico"><use href="#i-cam"/></svg><div class="t"><i>1</i>Low-light HDR cameras ×4<small>Front, rear, left, right</small></div></div>
-        <div class="hw"><svg class="ico"><use href="#i-thermal"/></svg><div class="t"><i>2</i>Thermal (LWIR) camera<small>Heat image of people, engines</small></div></div>
-        <div class="hw"><svg class="ico"><use href="#i-radar"/></svg><div class="t"><i>3</i>77–81 GHz mmWave radar<small>Distance + closing speed</small></div></div>
-        <div class="hw"><svg class="ico"><use href="#i-lidar"/></svg><div class="t"><i>4</i>LiDAR<small>3D depth, object position and size</small></div></div>
-        <div class="hw"><svg class="ico"><use href="#i-fog"/></svg><div class="t"><i>5</i>Visibility sensor<small>Light, humidity, rain, dust</small></div></div>
-        <div class="hw"><svg class="ico"><use href="#i-gps"/></svg><div class="t"><i>6</i>GPS / GNSS<small>Location, route, geofencing</small></div></div>
+      <div class="camwrap">
+        <canvas id="view" width="1280" height="720" aria-label="Camera view with detections"></canvas>
+        <video id="video" playsinline muted></video>
+        <div class="cammsg" id="camMsg" hidden>
+          <h3 id="camMsgTitle">CAMERA OFFLINE</h3>
+          <p id="camMsgText"></p>
+          <div class="cammsg-actions"><button class="btn primary" id="btnCamRetry">TRY AGAIN</button><button class="btn" id="btnGoSim">USE SIMULATION MODE</button></div>
+        </div>
+      </div>
+      <div class="pfoot">
+        <button class="btn sm" id="btnAI">AI DETECTION: ON</button>
+        <span class="aistat" id="aiStatus"><i class="dot"></i><span>AI MODEL: NOT LOADED</span></span>
+        <label class="mini">MIN CONF <input type="range" id="inConf" min="0.3" max="0.9" step="0.05"><output id="outConf" class="mono">50%</output></label>
+        <label class="mini">DEMO SCALE
+          <select id="inScale" class="sel sm">
+            <option value="1">×1 (real room metres)</option>
+            <option value="5">×5</option>
+            <option value="10">×10 (1 m room = 10 m road)</option>
+            <option value="20">×20</option>
+          </select>
+        </label>
+        <span class="spacer"></span>
+        <span class="mono dim" id="fps">— FPS</span>
       </div>
     </div>
-    <div class="grp"><h4>Vehicle state</h4>
-      <div class="hw"><svg class="ico"><use href="#i-imu"/></svg><div class="t"><i>7</i>IMU<small>Acceleration, turning, slope</small></div></div>
-      <div class="hw"><svg class="ico"><use href="#i-speed"/></svg><div class="t"><i>8</i>Wheel speed<small>Real speed, read from CAN bus</small></div></div>
-    </div>
-    <div class="grp"><h4>Processing</h4>
-      <div class="hw"><svg class="ico"><use href="#i-chip"/></svg><div class="t"><i>9</i>Edge computer<small>Jetson (prototype) or rugged industrial PC. Runs YOLO, fusion, risk engine</small></div></div>
-    </div>
-    <div class="grp"><h4>Driver alerts</h4>
-      <div class="hw"><svg class="ico"><use href="#i-display"/></svg><div class="t">Rugged 10″ cab display<small>Sunlight-readable</small></div></div>
-      <div class="hw"><svg class="ico"><use href="#i-bell"/></svg><div class="t">Buzzer<small>Beep pattern per level</small></div></div>
-      <div class="hw"><svg class="ico"><use href="#i-vib"/></svg><div class="t">Seat vibration<small>For CRITICAL only</small></div></div>
-    </div>
-    <div class="grp"><h4>Communication</h4>
-      <div class="hw"><svg class="ico"><use href="#i-antenna"/></svg><div class="t">Wi-Fi / 4G / 5G modem<small>GPS, status, alerts to control room</small></div></div>
-      <div class="hw"><svg class="ico"><use href="#i-link"/></svg><div class="t">CAN · Ethernet · RS-485<small>Wired links inside the truck</small></div></div>
-    </div>
-  </div>
-  <div class="links">
-    <div><b>ETHERNET</b>Cameras, thermal, LiDAR</div>
-    <div><b>CAN BUS</b>Radar, wheel speed, IMU</div>
-    <div><b>RS-485 / MODBUS</b>Visibility sensor</div>
-    <div class="key" style="flex:1.7"><b>SAFETY RULE</b>Warnings are decided on the truck. Wireless is only for monitoring.</div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>06 / 08</span></div>
-</section>
 
-<!-- ======================= 7 · DRIVER + CONTROL ROOM ======================= -->
-<section class="slide" id="s7">
-  <div class="hdr"><div class="kicker">07 — What the driver and control room see</div><h2>Simple in the cab. Complete in the control room.</h2></div>
-  <div class="dv">
-    <div class="cap"><h3>Driver cabin display</h3><span>Truck 03 · approaching a vehicle in fog</span></div>
-    <div class="dev">
-      <div class="scr">
-        <svg viewBox="0 0 668 500" width="668" height="500" font-family="IBM Plex Mono">
-          <defs>
-            <linearGradient id="d7sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8e979d"/><stop offset=".6" stop-color="#a39c93"/><stop offset="1" stop-color="#7f6a58"/></linearGradient>
-          </defs>
-          <rect width="668" height="500" fill="#0a0f14"/>
-          <text x="16" y="26" font-size="15" font-weight="600" fill="#38c3dd">MINESAFE-VISION</text>
-          <text x="652" y="26" font-size="13" fill="#91a2b6" text-anchor="end">TRUCK 03 · LOADED · 06:42</text>
-          <!-- live camera -->
-          <rect x="16" y="40" width="440" height="300" fill="url(#d7sky)"/>
-          <path d="M140 340 L220 176 L262 176 L380 340Z" fill="#7d6450" opacity=".75"/>
-          <path d="M220 176 L140 340 M262 176 L380 340" stroke="#5e4a3b" stroke-width="5"/>
-          <path d="M16 200 L200 176 L16 176Z" fill="#6f5a4a" opacity=".5"/><path d="M456 190 L280 176 L456 170Z" fill="#6f5a4a" opacity=".5"/>
-          <g opacity=".75"><use href="#truckRear" x="200" y="136" width="80" height="64"/></g>
-          <ellipse cx="236" cy="190" rx="240" ry="60" fill="#b8bcbe" opacity=".5" filter="url(#blur14)"/>
-          <rect x="192" y="126" width="96" height="84" fill="none" stroke="#f0a53a" stroke-width="2.5"/>
-          <rect x="192" y="110" width="96" height="16" fill="#f0a53a"/><text x="197" y="122" font-size="11" fill="#0a0f14" font-weight="600">TRUCK · 42 m</text>
-          <rect x="16" y="40" width="112" height="20" fill="#0a0f14" opacity=".75"/><text x="24" y="54" font-size="11" fill="#e5484d">● LIVE</text><text x="76" y="54" font-size="11" fill="#e7edf3">FRONT</text>
-          <!-- blind-spot side indicators -->
-          <path d="M24 190 l14 -14 v28z" fill="#2a3440"/><path d="M448 190 l-14 -14 v28z" fill="#2a3440"/>
-          <!-- right column -->
-          <g>
-            <text x="476" y="62" font-size="11" fill="#62748a">DISTANCE</text>
-            <text x="476" y="104" font-size="40" font-weight="600" fill="#f0a53a">42<tspan font-size="18" fill="#91a2b6"> m</tspan></text>
-            <line x1="476" y1="120" x2="652" y2="120" stroke="#1d2a38"/>
-            <text x="476" y="144" font-size="11" fill="#62748a">SPEED</text>
-            <text x="476" y="184" font-size="40" font-weight="600" fill="#e7edf3">22<tspan font-size="18" fill="#91a2b6"> km/h</tspan></text>
-            <line x1="476" y1="200" x2="652" y2="200" stroke="#1d2a38"/>
-            <text x="476" y="224" font-size="11" fill="#62748a">VISIBILITY</text>
-            <text x="476" y="258" font-size="28" font-weight="600" fill="#f0a53a">LOW</text>
-            <text x="476" y="278" font-size="12" fill="#91a2b6">fog · ~60 m</text>
-            <line x1="476" y1="294" x2="652" y2="294" stroke="#1d2a38"/>
-            <text x="476" y="318" font-size="11" fill="#62748a">SAFE GAP NEEDED</text>
-            <text x="476" y="338" font-size="18" font-weight="600" fill="#e7edf3">24 m</text>
-          </g>
-          <!-- risk band -->
-          <rect x="16" y="356" width="636" height="70" fill="#f0a53a"/>
-          <text x="36" y="386" font-size="13" font-weight="600" fill="#3a2508">RISK</text>
-          <text x="36" y="412" font-size="26" font-weight="600" fill="#1a1204">CAUTION</text>
-          <text x="632" y="398" font-size="20" font-weight="600" fill="#1a1204" text-anchor="end">Vehicle ahead · keep distance</text>
-          <!-- sensor status -->
-          <g font-size="12" fill="#91a2b6">
-            <text x="16" y="462" fill="#62748a">SENSORS</text>
-            <circle cx="98" cy="458" r="5" fill="#3fb950"/><text x="108" y="462">RGB</text>
-            <circle cx="160" cy="458" r="5" fill="#3fb950"/><text x="170" y="462">THERMAL</text>
-            <circle cx="252" cy="458" r="5" fill="#3fb950"/><text x="262" y="462">RADAR</text>
-            <circle cx="324" cy="458" r="5" fill="#3fb950"/><text x="334" y="462">LiDAR</text>
-            <circle cx="394" cy="458" r="5" fill="#3fb950"/><text x="404" y="462">GPS</text>
-            <circle cx="446" cy="458" r="5" fill="#3fb950"/><text x="456" y="462">LINK</text>
-            <text x="652" y="462" text-anchor="end" fill="#62748a">BUZZER: SHORT BEEP</text>
-          </g>
-        </svg>
+    <aside class="panel statuspanel">
+      <div class="phead"><h2>SYSTEM STATUS</h2><span class="spacer"></span><span class="tag">RISK ENGINE · LIVE</span></div>
+      <div class="riskcard safe" id="riskCard">
+        <small>RISK LEVEL</small>
+        <b id="riskText">SAFE</b>
+        <span id="riskSub">No hazard inside safe distance</span>
+      </div>
+      <dl class="kv">
+        <div><dt>SPEED</dt><dd><span id="stSpeed">28</span> <em>km/h</em></dd></div>
+        <div><dt>VISIBILITY</dt><dd id="stVis">GOOD</dd></div>
+        <div><dt>OBJECT</dt><dd id="stObj">NONE</dd></div>
+        <div><dt>DISTANCE <span class="src" id="stDistSrc">—</span></dt><dd><span id="stDist">—</span></dd></div>
+        <div><dt>SAFE DISTANCE</dt><dd><span id="stSafe">—</span> <em>m</em></dd></div>
+        <div><dt>RELATIVE SPEED</dt><dd id="stRel">—</dd></div>
+        <div><dt>TIME TO CONTACT</dt><dd id="stTtc">—</dd></div>
+      </dl>
+      <div class="reasons"><small>WHY THIS LEVEL</small><ul id="reasons"></ul></div>
+      <div class="thermal">
+        <div class="thead"><span>THERMAL VIEW</span><span class="tag warn">THERMAL CAMERA — SIMULATION</span></div>
+        <canvas id="thermal" width="320" height="180"></canvas>
+        <p class="note">False-colour render generated from detection results. The webcam is <b>not</b> a thermal camera. The proposed truck uses a real LWIR camera.</p>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============================ SENSOR STRIP ============================ -->
+  <section class="sensors-wrap">
+    <div class="sensors" id="sensorStrip"></div>
+    <p class="hint">Click any sensor to simulate a failure. Click again to restore it.</p>
+  </section>
+
+  <!-- ============================ ALERT BAR ============================ -->
+  <section class="alertbar safe" id="alertBar" role="status" aria-live="polite">
+    <svg class="aico" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></svg>
+    <span id="alertText">ALL CLEAR — NO HAZARD INSIDE SAFE DISTANCE</span>
+    <span class="spacer"></span>
+    <span class="mono" id="alertMeta"></span>
+  </section>
+
+  <!-- ============================ ROW 2: DRIVER + CONTROL ROOM ============================ -->
+  <section class="row2">
+    <div class="panel driver">
+      <div class="phead"><h2>DRIVER VIEW</h2><span class="tag">CAB DISPLAY</span><span class="spacer"></span><span class="mono dim" id="drvLocal">LOCAL ALERTS ACTIVE</span></div>
+      <div class="dscreen">
+        <div class="dtile"><small>SPEED</small><b><span id="dSpeed">28</span><em>km/h</em></b></div>
+        <div class="dtile"><small>VISIBILITY</small><b id="dVis">GOOD</b></div>
+        <div class="dtile"><small>OBJECT</small><b id="dObj">NONE</b></div>
+        <div class="dtile"><small>DISTANCE</small><b><span id="dDist">—</span><em id="dDistU"></em></b></div>
+        <div class="dtile"><small>SAFE DISTANCE</small><b><span id="dSafe">—</span><em>m</em></b></div>
+        <div class="dtile risk safe" id="dRiskTile"><small>RISK</small><b id="dRisk">SAFE</b></div>
+        <div class="dalert safe" id="dAlert">ROAD CLEAR</div>
       </div>
     </div>
-  </div>
 
-  <div class="cr">
-    <div class="cap"><h3>Mine control room</h3><span>Fleet safety monitor · all trucks live</span></div>
-    <div class="cr-scr">
-      <svg viewBox="0 0 736 532" width="736" height="532" font-family="IBM Plex Mono">
-        <rect width="736" height="532" fill="#0a0f14"/>
-        <rect width="736" height="30" fill="#111a24"/>
-        <text x="12" y="20" font-size="12" font-weight="600" fill="#38c3dd">PIT CONTROL · FLEET SAFETY</text>
-        <text x="724" y="20" font-size="11" fill="#91a2b6" text-anchor="end">5 TRUCKS · 1 CRITICAL · 06:42:18</text>
-        <!-- map -->
-        <rect x="10" y="40" width="420" height="300" fill="#0f1822" stroke="#1d2a38"/>
-        <g fill="none" stroke="#2a3a4c" stroke-width="1.3">
-          <path d="M60 190 C 60 90 180 60 250 64 C 350 70 400 130 396 200 C 392 280 300 320 220 318 C 120 316 60 270 60 190Z"/>
-          <path d="M100 190 C 100 120 180 100 240 102 C 320 106 356 150 354 200 C 352 256 290 282 222 280 C 150 278 100 250 100 190Z"/>
-          <path d="M142 190 C 142 150 190 140 236 140 C 290 142 312 170 310 200 C 308 236 270 246 226 244 C 176 242 142 228 142 190Z"/>
-          <path d="M184 192 C 184 176 206 172 230 172 C 258 174 270 184 268 198 C 266 212 250 216 228 214 C 204 212 184 206 184 192Z"/>
-        </g>
-        <path d="M420 60 L380 100 C 330 120 300 110 250 104 C 180 100 110 130 102 190 C 96 240 150 278 222 280 C 280 282 320 262 336 230" fill="none" stroke="#6b5646" stroke-width="4"/>
-        <text x="18" y="56" font-size="10" fill="#62748a">PIT MAP · GPS</text>
-        <text x="372" y="72" font-size="9.5" fill="#62748a" text-anchor="end">TO CRUSHER</text>
-        <!-- trucks on map -->
-        <g font-size="10" font-weight="600">
-          <circle cx="380" cy="100" r="8" fill="#3fb950"/><text x="392" y="104" fill="#3fb950">01</text>
-          <circle cx="200" cy="102" r="8" fill="#f0a53a"/><text x="186" y="92" fill="#f0a53a">02</text>
-          <circle cx="112" cy="222" r="10" fill="#e5484d"/><circle cx="112" cy="222" r="17" fill="none" stroke="#e5484d" stroke-width="1.5" opacity=".6"/><text x="130" y="226" fill="#ff6b6f">03</text>
-          <circle cx="300" cy="266" r="8" fill="#3fb950"/><text x="312" y="270" fill="#3fb950">04</text>
-          <circle cx="240" cy="206" r="8" fill="#91a2b6"/><text x="252" y="210" fill="#c8d3de">05</text>
-        </g>
-        <rect x="18" y="312" width="140" height="20" fill="#0a0f14" opacity=".8"/><text x="24" y="326" font-size="9.5" fill="#91a2b6">FOG ZONE · WEST RAMP</text>
-        <ellipse cx="110" cy="230" rx="70" ry="50" fill="#9aa3a8" opacity=".12"/>
-        <!-- fleet list -->
-        <text x="446" y="56" font-size="10" fill="#62748a">FLEET STATUS</text>
-        <g font-size="12">
-          <g transform="translate(446 64)"><rect width="280" height="46" fill="#111a24"/><rect width="4" height="46" fill="#3fb950"/><text x="14" y="19" fill="#e7edf3" font-weight="600">TRUCK 01</text><text x="14" y="36" fill="#62748a" font-size="10">31 km/h · haul · vis GOOD</text><text x="270" y="28" text-anchor="end" fill="#3fb950" font-weight="600">SAFE</text></g>
-          <g transform="translate(446 114)"><rect width="280" height="46" fill="#111a24"/><rect width="4" height="46" fill="#f0a53a"/><text x="14" y="19" fill="#e7edf3" font-weight="600">TRUCK 02</text><text x="14" y="36" fill="#62748a" font-size="10">18 km/h · dust · vis LOW</text><text x="270" y="28" text-anchor="end" fill="#f0a53a" font-weight="600">CAUTION</text></g>
-          <g transform="translate(446 164)"><rect width="280" height="46" fill="#2a1418"/><rect width="4" height="46" fill="#e5484d"/><text x="14" y="19" fill="#e7edf3" font-weight="600">TRUCK 03</text><text x="14" y="36" fill="#c98a8c" font-size="10">28 km/h · rock 18 m · fog</text><text x="270" y="28" text-anchor="end" fill="#ff6b6f" font-weight="600">CRITICAL</text></g>
-          <g transform="translate(446 214)"><rect width="280" height="46" fill="#111a24"/><rect width="4" height="46" fill="#3fb950"/><text x="14" y="19" fill="#e7edf3" font-weight="600">TRUCK 04</text><text x="14" y="36" fill="#62748a" font-size="10">0 km/h · loading · vis GOOD</text><text x="270" y="28" text-anchor="end" fill="#3fb950" font-weight="600">SAFE</text></g>
-          <g transform="translate(446 264)"><rect width="280" height="46" fill="#111a24" stroke="#62748a" stroke-dasharray="4 3"/><rect width="4" height="46" fill="#91a2b6"/><text x="14" y="19" fill="#e7edf3" font-weight="600">TRUCK 05</text><text x="14" y="36" fill="#62748a" font-size="10">12 km/h · LiDAR offline</text><text x="270" y="28" text-anchor="end" fill="#c8d3de" font-weight="600">SENSOR FAULT</text></g>
-        </g>
-        <!-- camera feeds -->
-        <text x="10" y="362" font-size="10" fill="#62748a">CAMERA FEEDS</text>
-        <g transform="translate(10 370)"><rect width="140" height="90" fill="#9a9ea0"/><path d="M40 90 L64 40 L78 40 L104 90Z" fill="#7d6450" opacity=".6"/><ellipse cx="70" cy="45" rx="70" ry="25" fill="#c5c8c9" opacity=".6" filter="url(#blur6)"/><path d="M58 76 l6-8 9-2 6 5 2 5z" fill="#4d3a2e"/><rect x="52" y="60" width="34" height="22" fill="none" stroke="#e5484d" stroke-width="1.5"/><rect width="140" height="16" fill="#0a0f14" opacity=".75"/><text x="5" y="12" font-size="9.5" fill="#ff6b6f">T-03 FRONT · ROCK</text></g>
-        <g transform="translate(158 370)"><rect width="140" height="90" fill="#8f8374"/><path d="M40 90 L64 40 L78 40 L104 90Z" fill="#6d5745" opacity=".6"/><ellipse cx="70" cy="50" rx="80" ry="34" fill="#b3a08c" opacity=".7" filter="url(#blur6)"/><rect width="140" height="16" fill="#0a0f14" opacity=".75"/><text x="5" y="12" font-size="9.5" fill="#f0a53a">T-02 FRONT · DUST</text></g>
-        <!-- sensor health -->
-        <text x="10" y="484" font-size="10" fill="#62748a">SENSOR HEALTH · T-03</text>
-        <g font-size="10" fill="#91a2b6" transform="translate(10 498)">
-          <circle cx="4" cy="-3" r="4" fill="#f0a53a"/><text x="12" y="0">RGB</text>
-          <circle cx="52" cy="-3" r="4" fill="#3fb950"/><text x="60" y="0">THERM</text>
-          <circle cx="112" cy="-3" r="4" fill="#3fb950"/><text x="120" y="0">RADAR</text>
-          <circle cx="172" cy="-3" r="4" fill="#3fb950"/><text x="180" y="0">LiDAR</text>
-          <circle cx="232" cy="-3" r="4" fill="#3fb950"/><text x="240" y="0">GPS</text>
-        </g>
-        <!-- alerts -->
-        <text x="314" y="362" font-size="10" fill="#62748a">SAFETY ALERTS</text>
-        <g font-size="11">
-          <g transform="translate(314 370)"><rect width="412" height="30" fill="#2a1418"/><text x="10" y="19" fill="#ff6b6f" font-weight="600">06:42:15</text><text x="84" y="19" fill="#e7edf3">T-03 CRITICAL · obstacle 18 m · fog</text></g>
-          <g transform="translate(314 404)"><rect width="412" height="30" fill="#111a24"/><text x="10" y="19" fill="#91a2b6" font-weight="600">06:41:52</text><text x="84" y="19" fill="#e7edf3">T-05 SENSOR FAULT · LiDAR no data</text></g>
-          <g transform="translate(314 438)"><rect width="412" height="30" fill="#111a24"/><text x="10" y="19" fill="#f0a53a" font-weight="600">06:40:07</text><text x="84" y="19" fill="#e7edf3">T-02 CAUTION · visibility LOW (dust)</text></g>
-          <g transform="translate(314 472)"><rect width="412" height="30" fill="#111a24"/><text x="10" y="19" fill="#f0a53a" font-weight="600">06:37:44</text><text x="84" y="19" fill="#e7edf3">T-01 blind-spot vehicle · right side</text></g>
-        </g>
-      </svg>
+    <div class="panel control">
+      <div class="phead"><h2>MINE CONTROL ROOM</h2><span class="tag">FLEET MONITOR · SIMULATED FLEET</span><span class="spacer"></span>
+        <button class="btn sm" id="btnNet">SIMULATE NETWORK LOSS</button></div>
+      <div class="cgrid">
+        <div class="mapbox">
+          <svg id="map" viewBox="0 0 600 380" aria-label="Mine road map">
+            <defs>
+              <pattern id="mgrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#132030" stroke-width="1"/></pattern>
+              <radialGradient id="fogZone"><stop offset="0" stop-color="#b9c1c6" stop-opacity=".35"/><stop offset="1" stop-color="#b9c1c6" stop-opacity="0"/></radialGradient>
+              <radialGradient id="dustZone"><stop offset="0" stop-color="#b08a62" stop-opacity=".4"/><stop offset="1" stop-color="#b08a62" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect width="600" height="380" fill="#0c1520"/>
+            <rect width="600" height="380" fill="url(#mgrid)"/>
+            <g fill="none" stroke="#243548" stroke-width="1.3">
+              <path d="M70 200 C70 90 200 50 300 52 C420 55 520 110 522 200 C524 292 420 340 300 338 C180 336 70 300 70 200Z"/>
+              <path d="M120 200 C120 118 210 90 300 92 C392 95 470 135 470 200 C470 262 392 298 300 296 C212 294 120 272 120 200Z"/>
+              <path d="M172 200 C172 150 232 132 300 133 C366 135 418 160 418 200 C418 240 366 258 300 256 C236 255 172 244 172 200Z"/>
+              <path d="M226 200 C226 178 262 170 300 171 C338 172 364 184 364 200 C364 216 338 226 300 225 C262 224 226 220 226 200Z"/>
+            </g>
+            <g id="mapZones"></g>
+            <path id="road" d="M590 22 L530 60 C470 95 420 70 330 68 C220 66 110 110 98 200 C88 280 190 318 300 318 C400 318 452 272 446 210 C440 160 390 148 330 150 C260 152 200 170 204 206 C208 236 260 240 300 238" fill="none" stroke="#5b4636" stroke-width="10" stroke-linecap="round"/>
+            <path d="M590 22 L530 60 C470 95 420 70 330 68 C220 66 110 110 98 200 C88 280 190 318 300 318 C400 318 452 272 446 210 C440 160 390 148 330 150 C260 152 200 170 204 206 C208 236 260 240 300 238" fill="none" stroke="#7d6450" stroke-width="1.2" stroke-dasharray="6 7"/>
+            <path id="safeSeg" fill="none" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+            <g id="mapStatic" font-family="IBM Plex Mono, monospace" font-size="10">
+              <rect x="556" y="8" width="38" height="16" fill="#1b2836"/><text x="575" y="20" fill="#91a2b6" text-anchor="middle">CRSH</text>
+              <text x="300" y="206" fill="#4e6178" text-anchor="middle">PIT FLOOR</text>
+              <g transform="translate(470 250)"><circle r="6" fill="#f07a1a"/><text x="10" y="4" fill="#f0a53a">W-07 WORKER</text></g>
+            </g>
+            <g id="mapDyn" font-family="IBM Plex Mono, monospace" font-size="10"></g>
+          </svg>
+          <div class="maplegend"><span><i class="dot g"></i>SAFE</span><span><i class="dot a"></i>CAUTION</span><span><i class="dot r"></i>CRITICAL</span><span><i class="dot o"></i>WORKER</span><span><i class="sq"></i>OBJECT</span></div>
+        </div>
+        <div class="cside">
+          <div class="ccard" id="crCard">
+            <div class="ccard-h"><b>TRUCK M-102</b><span class="cstat" id="crLink"><i class="dot g"></i>ONLINE</span></div>
+            <dl>
+              <div><dt>GPS</dt><dd id="crGps">19.8765° N, 75.3412° E</dd></div>
+              <div><dt>SPEED</dt><dd id="crSpeed">28 km/h</dd></div>
+              <div><dt>VISIBILITY</dt><dd id="crVis">GOOD</dd></div>
+              <div><dt>DISTANCE TO OBJECT</dt><dd id="crDist">—</dd></div>
+              <div><dt>RISK</dt><dd id="crRisk">SAFE</dd></div>
+            </dl>
+          </div>
+          <div class="fleet" id="fleet"></div>
+        </div>
+      </div>
+      <div class="log"><div class="log-h">SAFETY EVENT LOG</div><ol id="log"></ol></div>
     </div>
-  </div>
-  <div class="notes">
-    <div><b>Driver:</b> big numbers, one colour, one message. No AI data to interpret while driving.</div>
-    <div><b>Control room:</b> watches, responds and can send help. If the link drops, the truck still warns its driver.</div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>07 / 08</span></div>
-</section>
+  </section>
 
-<!-- ======================= 8 · DEMO + CONCLUSION ======================= -->
-<section class="slide" id="s8">
-  <div class="hdr"><div class="kicker">08 — Prototype demonstration &amp; conclusion</div><h2>Seven test scenarios, one clear result</h2></div>
-  <div class="grid">
-    <div class="sc"><div class="top"><span class="n">SCENARIO 1</span><span class="chip safe">Safe</span></div><h4>Clear road</h4><p>No obstacle, good visibility. Display stays green, no sound.</p><div class="sens"><span>RGB</span><span>THERM</span><span>RADAR</span><span>LiDAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 2</span><span class="chip caution">Caution</span></div><h4>Heavy fog</h4><p>Visibility sensor reads LOW. Safe gap is increased and the driver sees “Reduced visibility”.</p><div class="sens"><span class="lo">RGB</span><span class="lo">THERM</span><span>RADAR</span><span class="lo">LiDAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 3</span><span class="chip critical">Caution → Critical</span></div><h4>Dense dust</h4><p>Camera image fades out. Radar keeps ranging, and the level depends on distance and speed.</p><div class="sens"><span class="x">RGB</span><span class="lo">THERM</span><span>RADAR</span><span class="x">LiDAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 4</span><span class="chip caution">Warning</span></div><h4>Rock / stone on road</h4><p>Camera labels “rock”, LiDAR and radar give 24 m. Driver hears a warning with the distance.</p><div class="sens"><span>RGB</span><span>THERM</span><span>RADAR</span><span>LiDAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 5</span><span class="chip caution">Caution</span></div><h4>Vehicle ahead</h4><p>Camera identifies a truck. Radar measures the gap closing at 8 km/h. The system warns before the gap gets too small.</p><div class="sens"><span>RGB</span><span>THERM</span><span>RADAR</span><span>LiDAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 6</span><span class="chip caution">Side alert</span></div><h4>Blind-spot vehicle</h4><p>Right-side radar and side camera see a light vehicle. Right arrow flashes with a side beep.</p><div class="sens"><span>SIDE CAM</span><span>SIDE RADAR</span></div></div>
-    <div class="sc"><div class="top"><span class="n">SCENARIO 7</span><span class="chip fault">Sensor fault</span></div><h4>Sensor failure</h4><p>LiDAR unplugged. Screen shows “SENSOR FAULT: LiDAR”, the system keeps working on the others and never shows SAFE.</p><div class="sens"><span>RGB</span><span>THERM</span><span>RADAR</span><span class="x">LiDAR</span></div></div>
-    <div class="sc demo"><div class="top"><span class="n">HOW WE DEMO IT</span></div><h4>Test rig, not a slideshow</h4><p>Sensor head on a test vehicle / scale truck with a Jetson. Fog machine for fog, fine dust for dust, real rocks and a second vehicle as obstacles.</p></div>
-  </div>
-  <div class="end">
-    <div class="concl">
-      <div class="lbl">Conclusion</div>
-      <q>MineSafe-Vision provides the driver with an additional layer of awareness by combining cameras, radar, LiDAR, environmental sensing and AI-based risk analysis.</q>
-      <div class="ln"><b>In one line:</b> an extra set of eyes that warns the driver early when fog, dust or obstacles make driving difficult.</div>
+  <!-- ============================ ROW 3: DATA + FUSION + MODEL ============================ -->
+  <section class="row3">
+    <div class="panel data">
+      <div class="phead"><h2>REAL-TIME DATA</h2><span class="tag">UPDATES EVERY 1 s</span></div>
+      <div class="dgrid" id="dataGrid"></div>
+      <div class="chart">
+        <div class="chart-h"><span><i class="ln c"></i>OBJECT DISTANCE</span><span><i class="ln a"></i>SAFE DISTANCE</span><span class="spacer"></span><span class="dim">LAST 60 s</span></div>
+        <canvas id="chart" width="600" height="150"></canvas>
+      </div>
     </div>
-    <div class="card fut">
-      <div class="lbl" style="color:var(--cyan)">Future development</div>
-      <ul>
-        <li>More field testing in live mines</li>
-        <li>Mine-specific training datasets</li>
-        <li>Improved sensor fusion</li>
-        <li>Better obstacle classification</li>
-        <li>Integration with mine fleet systems</li>
-        <li>Extended real-world validation</li>
-      </ul>
+
+    <div class="panel fusion">
+      <div class="phead"><h2>SENSOR FUSION &amp; RANGING</h2><span class="tag warn">RADAR / LiDAR — SIMULATION</span></div>
+      <div class="seg" id="rangeSeg" role="radiogroup" aria-label="Ranging source">
+        <button data-r="auto">AUTO FUSION</button><button data-r="camera">CAMERA ONLY</button><button data-r="manual">MANUAL RADAR/LiDAR</button>
+      </div>
+      <p class="fnote" id="fusionNote"></p>
+      <div class="frow" id="fRadar"><span class="fn">mmWave RADAR</span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow" id="fLidar"><span class="fn">LiDAR</span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow" id="fCam"><span class="fn">CAMERA <em>(ESTIMATED)</em></span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow fused" id="fFused"><span class="fn">FUSED DISTANCE</span><span class="fv mono">—</span><span class="fw"></span><span class="fp mono"></span></div>
+      <div class="manual" id="manualBox">
+        <label>Radar distance (m) <input type="number" id="inRadar" min="0.5" max="300" step="0.1"></label>
+        <label>LiDAR distance (m) <input type="number" id="inLidar" min="0.5" max="300" step="0.1"></label>
+      </div>
+      <div class="calib">
+        <div class="lbl">CAMERA CALIBRATION <em>(live mode, optional)</em></div>
+        <div class="calib-row">
+          <label>Person stands at <input type="number" id="inCalDist" value="2.0" min="0.5" max="10" step="0.1"> m</label>
+          <button class="btn sm" id="btnCal">CALIBRATE</button>
+          <button class="btn sm" id="btnCalReset">RESET</button>
+        </div>
+        <p class="fnote" id="calNote">Uses a pinhole-camera model: distance ≈ focal length × real object height ÷ box height.</p>
+      </div>
     </div>
-  </div>
-  <div class="ftr"><span><b>MineSafe-Vision</b> · Project presentation</span><span>08 / 08</span></div>
-</section>
 
-</div>
+    <div class="panel model">
+      <div class="phead"><h2>SAFE-DISTANCE MODEL</h2><span class="tag warn">PROTOTYPE · NOT CERTIFIED</span></div>
+      <div class="formula" id="formula"></div>
+      <div class="params">
+        <label>Reaction time <span><input type="number" id="pReact" min="0.5" max="3" step="0.1"> s</span></label>
+        <label>Braking deceleration <span><input type="number" id="pDecel" min="1" max="6" step="0.1"> m/s²</span></label>
+        <label>Safety margin <span><input type="number" id="pMargin" min="0" max="30" step="1"> m</span></label>
+        <label>Load factor (braking) <span><input type="number" id="pLoad" min="1" max="1.8" step="0.05"> ×</span></label>
+        <label class="chkrow"><input type="checkbox" id="pLoaded"> Truck is loaded</label>
+        <label>Caution band <span><input type="number" id="pBand" min="1.1" max="3" step="0.1"> × safe</span></label>
+        <label>Heavy-fog visibility <span><input type="number" id="pFogVis" min="20" max="999" step="10"> m</span></label>
+        <label>Dense-dust visibility <span><input type="number" id="pDustVis" min="10" max="400" step="5"> m</span></label>
+      </div>
+      <p class="fnote">Visibility factor: GOOD (≥1000 m) ×1.0 · MODERATE ×1.1 · LOW (150–999 m) ×1.2 · VERY LOW (&lt;150 m) ×1.4</p>
+    </div>
+  </section>
 
-<div id="nav"><button id="prev" aria-label="Previous slide">‹</button><span id="count">1 / 8</span><button id="next" aria-label="Next slide">›</button><button id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
-<div id="bar"></div>
+  <!-- ============================ HONESTY ============================ -->
+  <section class="panel honesty">
+    <div class="phead"><h2>WHAT IS REAL AND WHAT IS SIMULATED IN THIS PROTOTYPE</h2></div>
+    <div class="hgrid">
+      <table>
+        <thead><tr><th>Component</th><th>In this web prototype</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Webcam video</td><td>Your real camera via <code>getUserMedia()</code></td><td><span class="pill real">REAL</span></td></tr>
+          <tr><td>Object detection</td><td>COCO-SSD neural network (TensorFlow.js) running in your browser on the live video: person, car, truck, bus, motorcycle, bicycle</td><td><span class="pill real">REAL AI</span></td></tr>
+          <tr><td>Rocks / mine obstacles</td><td>A generic pretrained model cannot reliably recognise mine rocks. Shown with the ROCK OBSTACLE simulation</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Camera distance</td><td>Pinhole-camera estimate from box size, multiplied by the demo scale. Not a measurement</td><td><span class="pill est">ESTIMATED</span></td></tr>
+          <tr><td>mmWave radar, LiDAR</td><td>Simulated readings with realistic noise, or values you type in, fused by inverse-variance weighting</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Thermal camera</td><td>False-colour render built from detection boxes</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Fog / dust</td><td>Visual effect on the video plus a simulated visibility value</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>GPS, IMU, visibility sensor, fleet</td><td>Simulated values</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Safe distance &amp; risk engine</td><td>Real calculation, every frame, using the prototype model on the right</td><td><span class="pill real">REAL LOGIC</span></td></tr>
+          <tr><td>Audio warning</td><td>Web Audio API tones + browser speech synthesis</td><td><span class="pill real">REAL</span></td></tr>
+        </tbody>
+      </table>
+      <div class="hw">
+        <div class="lbl">PROPOSED REAL HARDWARE ON THE TRUCK</div>
+        <ul>
+          <li><b>Low-light HDR RGB cameras</b> front, rear, left, right</li>
+          <li><b>LWIR thermal camera</b> for heat signatures in darkness and haze</li>
+          <li><b>77–81 GHz mmWave radar</b> for distance and closing speed in fog/dust</li>
+          <li><b>LiDAR</b> for 3D position and size</li>
+          <li><b>Visibility / environment sensor</b> for light, humidity and particulates</li>
+          <li><b>GPS/GNSS, IMU, wheel speed</b> (CAN bus)</li>
+          <li><b>Edge computer</b> (NVIDIA Jetson / industrial PC), cab display, buzzer, seat vibration</li>
+          <li><b>Wi-Fi / 4G / 5G</b> for control-room monitoring only. Driver alerts never depend on it</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
 
-<script>
-(function(){
-  // --- open-pit benches for slide 2
-  const g=document.getElementById('benches');
-  const riser=['#4f3528','#5a3c2d','#624232','#6b4836','#74503c','#7c5640'];
-  const face =['#6e5243','#7a5b49','#85634f','#8f6b55','#98735c','#a07a62'];
-  let s='';
-  for(let i=0;i<6;i++){
-    const y=70+i*52, sag=26+i*6;
-    s+=`<path d="M-10 ${y} Q430 ${y+sag} 870 ${y-8} L870 ${y+28} Q430 ${y+sag+34} -10 ${y+34} Z" fill="${riser[i]}"/>`;
-    s+=`<path d="M-10 ${y+34} Q430 ${y+sag+34} 870 ${y+28} L870 ${y+46} Q430 ${y+sag+52} -10 ${y+52} Z" fill="${face[i]}"/>`;
-  }
-  g.innerHTML=s;
+<footer class="foot">
+  <p><b>MineSafe-Vision</b> is a prototype safety-assistance system for demonstration purposes. It is not a certified vehicle control or collision-avoidance system. It does not control steering, brakes or any vehicle function.</p>
+</footer>
 
-  // --- deck navigation
-  const slides=[...document.querySelectorAll('.slide')], stage=document.getElementById('stage');
-  const count=document.getElementById('count'), bar=document.getElementById('bar');
-  let cur=0;
-  function fit(){const k=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${k})`}
-  function show(i){
-    cur=Math.max(0,Math.min(slides.length-1,i));
-    slides.forEach((el,j)=>el.classList.toggle('active',j===cur));
-    count.textContent=(cur+1)+' / '+slides.length;
-    bar.style.width=((cur+1)/slides.length*100)+'%';
-    if(location.hash!=='#'+(cur+1)) history.replaceState(null,'','#'+(cur+1));
-  }
-  addEventListener('resize',fit); fit();
-  document.getElementById('prev').onclick=()=>show(cur-1);
-  document.getElementById('next').onclick=()=>show(cur+1);
-  document.getElementById('fs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})};
-  addEventListener('keydown',e=>{
-    if(e.target.tagName==='INPUT')return;
-    if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(cur+1)}
-    else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(cur-1)}
-    else if(e.key==='Home')show(0); else if(e.key==='End')show(slides.length-1);
-    else if(e.key==='f'||e.key==='F')document.getElementById('fs').click();
-  });
-  let tx=null;
-  addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
-  addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)show(cur+(d<0?1:-1));tx=null});
-  addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n)show(n-1)});
-  if(/shot/.test(location.search))document.body.classList.add('shot');
-  show((parseInt(location.hash.slice(1))||1)-1);
-
-  // --- risk calculator (same rules as the slide)
-  const st={vis:1.25,load:1.25};
-  const sp=document.getElementById('cSpeed'), di=document.getElementById('cDist');
-  document.querySelectorAll('#calc .seg').forEach(seg=>{
-    seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-      seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-      st[seg.dataset.k]=parseFloat(b.dataset.v);calc();});
-  });
-  function calc(){
-    const kmh=+sp.value, d=+di.value, v=kmh/3.6;
-    const gap=(v*1.5 + v*v/(2*3.0))*st.load*st.vis;
-    let lvl = d<gap ? 2 : d<2*gap ? 1 : 0;
-    if(st.vis>1 && lvl===0) lvl=1;              // low visibility alone → at least CAUTION
-    if(st.vis>=1.5 && lvl===1) lvl=2;           // very low visibility + another risk → CRITICAL
-    document.getElementById('vSpeed').textContent=kmh+' km/h';
-    document.getElementById('vDist').textContent=d+' m';
-    document.getElementById('cGap').textContent=Math.round(gap)+' m';
-    const r=document.getElementById('cRisk'), names=['Safe','Caution','Critical'], cls=['safe','caution','critical'];
-    r.textContent=names[lvl]; r.className='chip '+cls[lvl];
-  }
-  sp.oninput=di.oninput=calc; calc();
-})();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
