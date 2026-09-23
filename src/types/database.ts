@@ -1,4 +1,6 @@
 export type ProfileVisibility = 'draft' | 'published' | 'unpublished'
+export type UserRole = 'user' | 'admin' | 'super_admin'
+export type AccountStatus = 'active' | 'disabled'
 
 export interface Profile {
   id: string
@@ -20,6 +22,8 @@ export interface Profile {
   show_phone: boolean
   show_location: boolean
   search_engine_visible: boolean
+  role: UserRole
+  account_status: AccountStatus
   created_at: string
   updated_at: string
 }
@@ -158,5 +162,60 @@ export interface AnalyticsEvent {
   user_id: string
   event_type: AnalyticsEventType
   source: string | null
+  qr_id: string | null
+  business_id: string | null
+  device_type: string | null
+  referrer: string | null
+  country: string | null
+  region: string | null
+  created_at: string
+}
+
+export interface SiteEvent {
+  id: string
+  session_id: string
+  event_type: 'page_view'
+  path: string
+  referrer: string | null
+  device_type: string | null
+  browser: string | null
+  country: string | null
+  region: string | null
+  created_at: string
+}
+
+export interface ShortLink {
+  id: string
+  code: string
+  target_url: string
+  user_id: string | null
+  scan_count: number
+  created_at: string
+}
+
+/** Row shape returned by the `admin_list_users` RPC — never includes password or token data. */
+export interface AdminUserRow {
+  id: string
+  username: string
+  full_name: string
+  email: string
+  phone: string | null
+  role: UserRole
+  account_status: AccountStatus
+  visibility: ProfileVisibility
+  created_at: string
+  last_sign_in_at: string | null
+  email_confirmed_at: string | null
+  is_banned: boolean
+  auth_provider: string | null
+}
+
+export interface AdminAuditLogEntry {
+  id: string
+  admin_id: string
+  action: string
+  target_type: string | null
+  target_id: string | null
+  meta: Record<string, unknown> | null
   created_at: string
 }

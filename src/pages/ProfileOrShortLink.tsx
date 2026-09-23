@@ -5,6 +5,7 @@ import { Logo } from '@/components/layout/Logo'
 import { Spinner } from '@/components/ui/Spinner'
 import { decodeSelfLink, isDbStyleCode, isSelfEncodedCode } from '@/utils/shortLink'
 import { resolveDbShortLink } from '@/lib/shortLinks'
+import { supabase } from '@/lib/supabase'
 import PublicProfile from '@/pages/PublicProfile'
 
 type Outcome = { kind: 'loading' } | { kind: 'username' } | { kind: 'redirecting' } | { kind: 'not_found' }
@@ -48,6 +49,7 @@ export default function ProfileOrShortLink() {
         if (cancelled) return
         if (target) {
           setOutcome({ kind: 'redirecting' })
+          supabase.rpc('record_short_link_scan', { p_code: slug }).then(() => {}, () => {})
           window.location.replace(target)
         } else {
           // Shape matched a short code but nothing resolved — could still

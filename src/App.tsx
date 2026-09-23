@@ -1,8 +1,11 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useAuthListener } from '@/hooks/useAuth'
+import { useSitePageView } from '@/hooks/useSitePageView'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
+import { AdminProtectedRoute } from '@/routes/AdminProtectedRoute'
 import { MarketingLayout } from '@/components/layout/MarketingLayout'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
+import { AdminLayout } from '@/components/layout/AdminLayout'
 
 import Landing from '@/pages/Landing'
 import QuickQR from '@/pages/QuickQR'
@@ -37,11 +40,27 @@ import PublicProfile from '@/pages/PublicProfile'
 import ProfileOrShortLink from '@/pages/ProfileOrShortLink'
 import NotFound from '@/pages/NotFound'
 
+import AdminLogin from '@/pages/admin/AdminLogin'
+import AdminDashboard from '@/pages/admin/AdminDashboard'
+import AdminUsers from '@/pages/admin/AdminUsers'
+import AdminProfiles from '@/pages/admin/AdminProfiles'
+import AdminBusinesses from '@/pages/admin/AdminBusinesses'
+import AdminAnalytics from '@/pages/admin/AdminAnalytics'
+import AdminQr from '@/pages/admin/AdminQr'
+import AdminCards from '@/pages/admin/AdminCards'
+import AdminSettings from '@/pages/admin/AdminSettings'
+
+function RouteTracker() {
+  useSitePageView()
+  return null
+}
+
 export default function App() {
   useAuthListener()
 
   return (
     <BrowserRouter>
+      <RouteTracker />
       <Routes>
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<Landing />} />
@@ -75,6 +94,20 @@ export default function App() {
             <Route path="qr" element={<QrCodePage />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
+          </Route>
+        </Route>
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route element={<AdminProtectedRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="profiles" element={<AdminProfiles />} />
+            <Route path="businesses" element={<AdminBusinesses />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="qr" element={<AdminQr />} />
+            <Route path="cards" element={<AdminCards />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>
 
