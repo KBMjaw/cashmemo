@@ -15,11 +15,10 @@ One-Tap has two modes:
 Live on Vercel (project `one-tap`, auto-deploys from this branch until the PR merges
 to `main`): **https://one-tap-black.vercel.app**
 
-- **Quick QR is fully live** — no backend dependency.
-- **Digital Identity** is wired to a real Supabase project
-  (`VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are set on the Vercel project), but the
-  database migrations haven't been applied to it yet — see "Getting started" below for
-  the one remaining step.
+Both modes are fully live — sign up, publish a profile, generate a QR, everything
+works end to end. Backed by a real Supabase project (`one-tap`,
+ref `jnebvpimlsuctfnclgws`) with all three migrations applied and its security
+advisor clean (no outstanding findings).
 
 ## Status
 
@@ -28,7 +27,8 @@ Identity)** and the core of **Phase 3 (QR)** and **Phase 4 (Business Cards)** fr
 product spec, end to end and wired to a real Supabase backend:
 
 - Email/password + Google auth, protected routes, session persistence
-- Full Postgres schema with Row Level Security (`supabase/migrations/0001_init.sql`)
+- Full Postgres schema with Row Level Security (`supabase/migrations/0001_init.sql`),
+  hardened against every Supabase security-advisor finding (`0003_security_hardening.sql`)
 - Digital profile: personal info, photo/cover upload, privacy controls, publish states
 - Multiple businesses (CRUD, reorder, set primary)
 - Portfolio + professional experience (separate dashboard pages)
@@ -61,41 +61,30 @@ panel, and image cropping in the uploader (files upload as-is today; crop is a n
 
 ## Getting started
 
-A Supabase project (`one-tap`, ref `jnebvpimlsuctfnclgws`) already exists and its
-credentials are already set as environment variables on the Vercel `one-tap` project.
-**The only remaining setup step is applying the two migration files** — the automated
-tool connection needed to do this dropped mid-session before it could run:
+The live deployment above needs nothing further from you. One optional step remains
+in the Supabase dashboard:
 
-1. Open the [SQL editor](https://supabase.com/dashboard/project/jnebvpimlsuctfnclgws/sql/new)
-   for the `one-tap` Supabase project.
-2. Paste and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-   in full, then paste and run
-   [`supabase/migrations/0002_short_links.sql`](supabase/migrations/0002_short_links.sql).
-   This creates every table, RLS policy, storage bucket, the `public_profiles` view,
-   and the `short_links` table.
-3. **Enable Google auth** (optional): Authentication → Providers → Google.
-4. **Auth → URL Configuration**: set Site URL to `https://one-tap-black.vercel.app`
-   and add `https://one-tap-black.vercel.app/**` (and `http://localhost:5173/**` for
-   local dev) to Redirect URLs — otherwise verification/reset emails redirect to the
-   wrong place.
+- **Auth → URL Configuration**: set Site URL to `https://one-tap-black.vercel.app`
+  and add `https://one-tap-black.vercel.app/**` to Redirect URLs, so verification and
+  password-reset emails land back on the app instead of Supabase's default. (Google
+  auth can also be enabled here under Authentication → Providers if you want the
+  "Continue with Google" button to work.)
 
-Once the migration has run, Digital Identity works immediately on the existing
-deployment — no redeploy needed, since the env vars are already live.
+### Local development / a separate Supabase project
 
-### Local development
-
-For a totally separate/self-hosted Supabase project instead:
-
-1. Create a project at [supabase.com](https://supabase.com) and run both migration
-   files as above.
-2. `cp .env.example .env` and fill in `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open its SQL editor and run, in order:
+   [`0001_init.sql`](supabase/migrations/0001_init.sql),
+   [`0002_short_links.sql`](supabase/migrations/0002_short_links.sql),
+   [`0003_security_hardening.sql`](supabase/migrations/0003_security_hardening.sql).
+3. `cp .env.example .env` and fill in `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
    from Project Settings → API.
-3. ```bash
+4. ```bash
    npm install
    npm run dev
    ```
-4. Visit `http://localhost:5173`. Quick QR works immediately; Digital Identity needs
-   step 1 done first.
+5. Visit `http://localhost:5173`. Quick QR works immediately even without step 1–3;
+   Digital Identity needs them done first.
 
 ## Project structure
 
