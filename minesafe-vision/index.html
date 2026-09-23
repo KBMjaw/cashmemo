@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MineSafe-Vision</title>
+<meta name="description" content="MineSafe-Vision: AI-enabled safety and monitoring prototype for mine vehicles in fog and low visibility. Live webcam, in-browser object detection, safe-distance risk engine and control-room view.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d131b'/%3E%3Cpath d='M6 22l6-12 5 8 3-4 6 8z' fill='none' stroke='%2338c3dd' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================ HEADER ============================ -->
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#152130"/><path d="M6 22l6-12 5 8 3-4 6 8z" fill="none" stroke="#38c3dd" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    <div><b>MINESAFE-VISION</b><small>AI safety assistance · fog &amp; low-visibility prototype</small></div>
+  </div>
+  <div class="modes" role="tablist" aria-label="Prototype mode">
+    <button role="tab" data-mode="live" id="tabLive">LIVE CAMERA MODE</button>
+    <button role="tab" data-mode="sim" id="tabSim">SIMULATION MODE</button>
+  </div>
+  <div class="hdr-right">
+    <span class="truck-id">TRUCK M-102 <i class="dot" id="hdrLinkDot"></i><span id="hdrLink">ONLINE</span></span>
+    <span class="clock mono" id="clock">--:--:--</span>
+    <a class="btn ghost" href="presentation/" target="_blank" rel="noopener">SLIDES</a>
+    <button class="btn reset" id="btnReset">RESET SYSTEM</button>
+  </div>
+</header>
+
+<!-- ============================ CONTROL DOCK ============================ -->
+<nav class="dock" aria-label="Demonstration controls">
+  <div class="grp">
+    <span class="glbl">SCENARIO</span>
+    <button class="btn scn" data-scn="clear">CLEAR ROAD</button>
+    <button class="btn scn" data-scn="vehicle">VEHICLE AHEAD</button>
+    <button class="btn scn" data-scn="person">PERSON AHEAD</button>
+    <button class="btn scn" data-scn="rock">ROCK OBSTACLE</button>
+  </div>
+  <div class="grp">
+    <span class="glbl">ENVIRONMENT</span>
+    <button class="btn env fog" id="btnFog">HEAVY FOG</button>
+    <button class="btn env dust" id="btnDust">DENSE DUST</button>
+  </div>
+  <div class="grp">
+    <span class="glbl">FAULT</span>
+    <button class="btn fault" id="btnFault">SIMULATE RADAR FAILURE</button>
+  </div>
+  <div class="grp slider">
+    <span class="glbl">SPEED</span>
+    <button class="btn step" data-step="speed" data-d="-2" aria-label="Decrease speed">−</button>
+    <input type="range" id="inSpeed" min="0" max="60" step="1" aria-label="Vehicle speed">
+    <button class="btn step" data-step="speed" data-d="2" aria-label="Increase speed">+</button>
+    <output id="outSpeed" class="mono">28 km/h</output>
+  </div>
+  <div class="grp slider">
+    <span class="glbl">SIM OBJECT DIST</span>
+    <input type="range" id="inDist" min="2" max="120" step="0.5" aria-label="Simulated object distance">
+    <output id="outDist" class="mono">18 m</output>
+    <label class="chk" title="Simulated object closes in at the relative speed"><input type="checkbox" id="inMotion"> MOTION</label>
+  </div>
+  <div class="grp">
+    <span class="glbl">ALERT SOUND</span>
+    <button class="btn" id="btnSound">ENABLE ALERT SOUND</button>
+    <button class="btn" id="btnMute" disabled>MUTE ALERT</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ============================ ROW 1: CAMERA + STATUS ============================ -->
+  <section class="row1">
+    <div class="panel cam">
+      <div class="phead">
+        <h2>LIVE CAMERA</h2>
+        <span class="status off" id="camStatus"><i class="dot"></i><span>CAMERA OFFLINE</span></span>
+        <span class="tag" id="sceneTag">SIMULATED SCENE</span>
+        <span class="spacer"></span>
+        <select id="camSelect" class="sel" hidden aria-label="Camera device"></select>
+        <button class="btn primary" id="btnCamStart">START CAMERA</button>
+        <button class="btn" id="btnCamStop" disabled>STOP CAMERA</button>
+      </div>
+      <div class="camwrap">
+        <canvas id="view" width="1280" height="720" aria-label="Camera view with detections"></canvas>
+        <video id="video" playsinline muted></video>
+        <div class="cammsg" id="camMsg" hidden>
+          <h3 id="camMsgTitle">CAMERA OFFLINE</h3>
+          <p id="camMsgText"></p>
+          <div class="cammsg-actions"><button class="btn primary" id="btnCamRetry">TRY AGAIN</button><button class="btn" id="btnGoSim">USE SIMULATION MODE</button></div>
+        </div>
+      </div>
+      <div class="pfoot">
+        <button class="btn sm" id="btnAI">AI DETECTION: ON</button>
+        <span class="aistat" id="aiStatus"><i class="dot"></i><span>AI MODEL: NOT LOADED</span></span>
+        <label class="mini">MIN CONF <input type="range" id="inConf" min="0.3" max="0.9" step="0.05"><output id="outConf" class="mono">50%</output></label>
+        <label class="mini">DEMO SCALE
+          <select id="inScale" class="sel sm">
+            <option value="1">×1 (real room metres)</option>
+            <option value="5">×5</option>
+            <option value="10">×10 (1 m room = 10 m road)</option>
+            <option value="20">×20</option>
+          </select>
+        </label>
+        <span class="spacer"></span>
+        <span class="mono dim" id="fps">— FPS</span>
+      </div>
+    </div>
+
+    <aside class="panel statuspanel">
+      <div class="phead"><h2>SYSTEM STATUS</h2><span class="spacer"></span><span class="tag">RISK ENGINE · LIVE</span></div>
+      <div class="riskcard safe" id="riskCard">
+        <small>RISK LEVEL</small>
+        <b id="riskText">SAFE</b>
+        <span id="riskSub">No hazard inside safe distance</span>
+      </div>
+      <dl class="kv">
+        <div><dt>SPEED</dt><dd><span id="stSpeed">28</span> <em>km/h</em></dd></div>
+        <div><dt>VISIBILITY</dt><dd id="stVis">GOOD</dd></div>
+        <div><dt>OBJECT</dt><dd id="stObj">NONE</dd></div>
+        <div><dt>DISTANCE <span class="src" id="stDistSrc">—</span></dt><dd><span id="stDist">—</span></dd></div>
+        <div><dt>SAFE DISTANCE</dt><dd><span id="stSafe">—</span> <em>m</em></dd></div>
+        <div><dt>RELATIVE SPEED</dt><dd id="stRel">—</dd></div>
+        <div><dt>TIME TO CONTACT</dt><dd id="stTtc">—</dd></div>
+      </dl>
+      <div class="reasons"><small>WHY THIS LEVEL</small><ul id="reasons"></ul></div>
+      <div class="thermal">
+        <div class="thead"><span>THERMAL VIEW</span><span class="tag warn">THERMAL CAMERA — SIMULATION</span></div>
+        <canvas id="thermal" width="320" height="180"></canvas>
+        <p class="note">False-colour render generated from detection results. The webcam is <b>not</b> a thermal camera. The proposed truck uses a real LWIR camera.</p>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============================ SENSOR STRIP ============================ -->
+  <section class="sensors-wrap">
+    <div class="sensors" id="sensorStrip"></div>
+    <p class="hint">Click any sensor to simulate a failure. Click again to restore it.</p>
+  </section>
+
+  <!-- ============================ ALERT BAR ============================ -->
+  <section class="alertbar safe" id="alertBar" role="status" aria-live="polite">
+    <svg class="aico" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></svg>
+    <span id="alertText">ALL CLEAR — NO HAZARD INSIDE SAFE DISTANCE</span>
+    <span class="spacer"></span>
+    <span class="mono" id="alertMeta"></span>
+  </section>
+
+  <!-- ============================ ROW 2: DRIVER + CONTROL ROOM ============================ -->
+  <section class="row2">
+    <div class="panel driver">
+      <div class="phead"><h2>DRIVER VIEW</h2><span class="tag">CAB DISPLAY</span><span class="spacer"></span><span class="mono dim" id="drvLocal">LOCAL ALERTS ACTIVE</span></div>
+      <div class="dscreen">
+        <div class="dtile"><small>SPEED</small><b><span id="dSpeed">28</span><em>km/h</em></b></div>
+        <div class="dtile"><small>VISIBILITY</small><b id="dVis">GOOD</b></div>
+        <div class="dtile"><small>OBJECT</small><b id="dObj">NONE</b></div>
+        <div class="dtile"><small>DISTANCE</small><b><span id="dDist">—</span><em id="dDistU"></em></b></div>
+        <div class="dtile"><small>SAFE DISTANCE</small><b><span id="dSafe">—</span><em>m</em></b></div>
+        <div class="dtile risk safe" id="dRiskTile"><small>RISK</small><b id="dRisk">SAFE</b></div>
+        <div class="dalert safe" id="dAlert">ROAD CLEAR</div>
+      </div>
+    </div>
+
+    <div class="panel control">
+      <div class="phead"><h2>MINE CONTROL ROOM</h2><span class="tag">FLEET MONITOR · SIMULATED FLEET</span><span class="spacer"></span>
+        <button class="btn sm" id="btnNet">SIMULATE NETWORK LOSS</button></div>
+      <div class="cgrid">
+        <div class="mapbox">
+          <svg id="map" viewBox="0 0 600 380" aria-label="Mine road map">
+            <defs>
+              <pattern id="mgrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#132030" stroke-width="1"/></pattern>
+              <radialGradient id="fogZone"><stop offset="0" stop-color="#b9c1c6" stop-opacity=".35"/><stop offset="1" stop-color="#b9c1c6" stop-opacity="0"/></radialGradient>
+              <radialGradient id="dustZone"><stop offset="0" stop-color="#b08a62" stop-opacity=".4"/><stop offset="1" stop-color="#b08a62" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect width="600" height="380" fill="#0c1520"/>
+            <rect width="600" height="380" fill="url(#mgrid)"/>
+            <g fill="none" stroke="#243548" stroke-width="1.3">
+              <path d="M70 200 C70 90 200 50 300 52 C420 55 520 110 522 200 C524 292 420 340 300 338 C180 336 70 300 70 200Z"/>
+              <path d="M120 200 C120 118 210 90 300 92 C392 95 470 135 470 200 C470 262 392 298 300 296 C212 294 120 272 120 200Z"/>
+              <path d="M172 200 C172 150 232 132 300 133 C366 135 418 160 418 200 C418 240 366 258 300 256 C236 255 172 244 172 200Z"/>
+              <path d="M226 200 C226 178 262 170 300 171 C338 172 364 184 364 200 C364 216 338 226 300 225 C262 224 226 220 226 200Z"/>
+            </g>
+            <g id="mapZones"></g>
+            <path id="road" d="M590 22 L530 60 C470 95 420 70 330 68 C220 66 110 110 98 200 C88 280 190 318 300 318 C400 318 452 272 446 210 C440 160 390 148 330 150 C260 152 200 170 204 206 C208 236 260 240 300 238" fill="none" stroke="#5b4636" stroke-width="10" stroke-linecap="round"/>
+            <path d="M590 22 L530 60 C470 95 420 70 330 68 C220 66 110 110 98 200 C88 280 190 318 300 318 C400 318 452 272 446 210 C440 160 390 148 330 150 C260 152 200 170 204 206 C208 236 260 240 300 238" fill="none" stroke="#7d6450" stroke-width="1.2" stroke-dasharray="6 7"/>
+            <path id="safeSeg" fill="none" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+            <g id="mapStatic" font-family="IBM Plex Mono, monospace" font-size="10">
+              <rect x="556" y="8" width="38" height="16" fill="#1b2836"/><text x="575" y="20" fill="#91a2b6" text-anchor="middle">CRSH</text>
+              <text x="300" y="206" fill="#4e6178" text-anchor="middle">PIT FLOOR</text>
+              <g transform="translate(470 250)"><circle r="6" fill="#f07a1a"/><text x="10" y="4" fill="#f0a53a">W-07 WORKER</text></g>
+            </g>
+            <g id="mapDyn" font-family="IBM Plex Mono, monospace" font-size="10"></g>
+          </svg>
+          <div class="maplegend"><span><i class="dot g"></i>SAFE</span><span><i class="dot a"></i>CAUTION</span><span><i class="dot r"></i>CRITICAL</span><span><i class="dot o"></i>WORKER</span><span><i class="sq"></i>OBJECT</span></div>
+        </div>
+        <div class="cside">
+          <div class="ccard" id="crCard">
+            <div class="ccard-h"><b>TRUCK M-102</b><span class="cstat" id="crLink"><i class="dot g"></i>ONLINE</span></div>
+            <dl>
+              <div><dt>GPS</dt><dd id="crGps">19.8765° N, 75.3412° E</dd></div>
+              <div><dt>SPEED</dt><dd id="crSpeed">28 km/h</dd></div>
+              <div><dt>VISIBILITY</dt><dd id="crVis">GOOD</dd></div>
+              <div><dt>DISTANCE TO OBJECT</dt><dd id="crDist">—</dd></div>
+              <div><dt>RISK</dt><dd id="crRisk">SAFE</dd></div>
+            </dl>
+          </div>
+          <div class="fleet" id="fleet"></div>
+        </div>
+      </div>
+      <div class="log"><div class="log-h">SAFETY EVENT LOG</div><ol id="log"></ol></div>
+    </div>
+  </section>
+
+  <!-- ============================ ROW 3: DATA + FUSION + MODEL ============================ -->
+  <section class="row3">
+    <div class="panel data">
+      <div class="phead"><h2>REAL-TIME DATA</h2><span class="tag">UPDATES EVERY 1 s</span></div>
+      <div class="dgrid" id="dataGrid"></div>
+      <div class="chart">
+        <div class="chart-h"><span><i class="ln c"></i>OBJECT DISTANCE</span><span><i class="ln a"></i>SAFE DISTANCE</span><span class="spacer"></span><span class="dim">LAST 60 s</span></div>
+        <canvas id="chart" width="600" height="150"></canvas>
+      </div>
+    </div>
+
+    <div class="panel fusion">
+      <div class="phead"><h2>SENSOR FUSION &amp; RANGING</h2><span class="tag warn">RADAR / LiDAR — SIMULATION</span></div>
+      <div class="seg" id="rangeSeg" role="radiogroup" aria-label="Ranging source">
+        <button data-r="auto">AUTO FUSION</button><button data-r="camera">CAMERA ONLY</button><button data-r="manual">MANUAL RADAR/LiDAR</button>
+      </div>
+      <p class="fnote" id="fusionNote"></p>
+      <div class="frow" id="fRadar"><span class="fn">mmWave RADAR</span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow" id="fLidar"><span class="fn">LiDAR</span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow" id="fCam"><span class="fn">CAMERA <em>(ESTIMATED)</em></span><span class="fv mono">—</span><span class="fw"><i></i></span><span class="fp mono">—</span></div>
+      <div class="frow fused" id="fFused"><span class="fn">FUSED DISTANCE</span><span class="fv mono">—</span><span class="fw"></span><span class="fp mono"></span></div>
+      <div class="manual" id="manualBox">
+        <label>Radar distance (m) <input type="number" id="inRadar" min="0.5" max="300" step="0.1"></label>
+        <label>LiDAR distance (m) <input type="number" id="inLidar" min="0.5" max="300" step="0.1"></label>
+      </div>
+      <div class="calib">
+        <div class="lbl">CAMERA CALIBRATION <em>(live mode, optional)</em></div>
+        <div class="calib-row">
+          <label>Person stands at <input type="number" id="inCalDist" value="2.0" min="0.5" max="10" step="0.1"> m</label>
+          <button class="btn sm" id="btnCal">CALIBRATE</button>
+          <button class="btn sm" id="btnCalReset">RESET</button>
+        </div>
+        <p class="fnote" id="calNote">Uses a pinhole-camera model: distance ≈ focal length × real object height ÷ box height.</p>
+      </div>
+    </div>
+
+    <div class="panel model">
+      <div class="phead"><h2>SAFE-DISTANCE MODEL</h2><span class="tag warn">PROTOTYPE · NOT CERTIFIED</span></div>
+      <div class="formula" id="formula"></div>
+      <div class="params">
+        <label>Reaction time <span><input type="number" id="pReact" min="0.5" max="3" step="0.1"> s</span></label>
+        <label>Braking deceleration <span><input type="number" id="pDecel" min="1" max="6" step="0.1"> m/s²</span></label>
+        <label>Safety margin <span><input type="number" id="pMargin" min="0" max="30" step="1"> m</span></label>
+        <label>Load factor (braking) <span><input type="number" id="pLoad" min="1" max="1.8" step="0.05"> ×</span></label>
+        <label class="chkrow"><input type="checkbox" id="pLoaded"> Truck is loaded</label>
+        <label>Caution band <span><input type="number" id="pBand" min="1.1" max="3" step="0.1"> × safe</span></label>
+        <label>Heavy-fog visibility <span><input type="number" id="pFogVis" min="20" max="999" step="10"> m</span></label>
+        <label>Dense-dust visibility <span><input type="number" id="pDustVis" min="10" max="400" step="5"> m</span></label>
+      </div>
+      <p class="fnote">Visibility factor: GOOD (≥1000 m) ×1.0 · MODERATE ×1.1 · LOW (150–999 m) ×1.2 · VERY LOW (&lt;150 m) ×1.4</p>
+    </div>
+  </section>
+
+  <!-- ============================ HONESTY ============================ -->
+  <section class="panel honesty">
+    <div class="phead"><h2>WHAT IS REAL AND WHAT IS SIMULATED IN THIS PROTOTYPE</h2></div>
+    <div class="hgrid">
+      <table>
+        <thead><tr><th>Component</th><th>In this web prototype</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Webcam video</td><td>Your real camera via <code>getUserMedia()</code></td><td><span class="pill real">REAL</span></td></tr>
+          <tr><td>Object detection</td><td>COCO-SSD neural network (TensorFlow.js) running in your browser on the live video: person, car, truck, bus, motorcycle, bicycle</td><td><span class="pill real">REAL AI</span></td></tr>
+          <tr><td>Rocks / mine obstacles</td><td>A generic pretrained model cannot reliably recognise mine rocks. Shown with the ROCK OBSTACLE simulation</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Camera distance</td><td>Pinhole-camera estimate from box size, multiplied by the demo scale. Not a measurement</td><td><span class="pill est">ESTIMATED</span></td></tr>
+          <tr><td>mmWave radar, LiDAR</td><td>Simulated readings with realistic noise, or values you type in, fused by inverse-variance weighting</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Thermal camera</td><td>False-colour render built from detection boxes</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Fog / dust</td><td>Visual effect on the video plus a simulated visibility value</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>GPS, IMU, visibility sensor, fleet</td><td>Simulated values</td><td><span class="pill sim">SIMULATED</span></td></tr>
+          <tr><td>Safe distance &amp; risk engine</td><td>Real calculation, every frame, using the prototype model on the right</td><td><span class="pill real">REAL LOGIC</span></td></tr>
+          <tr><td>Audio warning</td><td>Web Audio API tones + browser speech synthesis</td><td><span class="pill real">REAL</span></td></tr>
+        </tbody>
+      </table>
+      <div class="hw">
+        <div class="lbl">PROPOSED REAL HARDWARE ON THE TRUCK</div>
+        <ul>
+          <li><b>Low-light HDR RGB cameras</b> front, rear, left, right</li>
+          <li><b>LWIR thermal camera</b> for heat signatures in darkness and haze</li>
+          <li><b>77–81 GHz mmWave radar</b> for distance and closing speed in fog/dust</li>
+          <li><b>LiDAR</b> for 3D position and size</li>
+          <li><b>Visibility / environment sensor</b> for light, humidity and particulates</li>
+          <li><b>GPS/GNSS, IMU, wheel speed</b> (CAN bus)</li>
+          <li><b>Edge computer</b> (NVIDIA Jetson / industrial PC), cab display, buzzer, seat vibration</li>
+          <li><b>Wi-Fi / 4G / 5G</b> for control-room monitoring only. Driver alerts never depend on it</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p><b>MineSafe-Vision</b> is a prototype safety-assistance system for demonstration purposes. It is not a certified vehicle control or collision-avoidance system. It does not control steering, brakes or any vehicle function.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
